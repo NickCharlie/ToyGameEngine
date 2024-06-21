@@ -1,4 +1,5 @@
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Math MATH_SOURCES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Math/Geometry MATH_SOURCES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Demo DEMO_SOURCES)
 
 
