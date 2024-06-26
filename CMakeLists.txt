@@ -32,6 +32,7 @@ qt_add_executable(ToyGameEngine
     ${QOBJECT_HEADS}
 
     ${DEMO_SOURCES}
+    ${CANVAS_SOURCES}
     ${MATH_SOURCES}
 )
 
