@@ -1,7 +1,13 @@
 #pragma once
-
+#include "Math/Geometry/Line.hpp"
+#include "Math/Geometry/Point.hpp"
+#include "Math/Geometry/AABBRect.hpp"
+#include "Math/Geometry/Bezier.hpp"
+#include "Math/Geometry/Circle.hpp"
+#include "Math/Geometry/Polygon.hpp"
+#include "Math/Geometry/Polyline.hpp"
+#include "Math/Geometry/Triangle.hpp"
 #include "Math/Geometry/GeometryObject.hpp"
-
 
 namespace ToyGameEngine {
     
