@@ -4,6 +4,7 @@
 #include "Math/Geometry/Algorithm.hpp"
 #include "Math/Geometry/Polygon.hpp"
 #include "Math/Geometry/AABBRect.hpp"
+#include "Math/Geometry/Square.hpp"
 #include "Math/Geometry/Line.hpp"
 #include "Math/Geometry/Circle.hpp"
 #include "Math/Geometry/Triangle.hpp"
@@ -196,6 +197,15 @@ double Geometry::distance(const Geometry::Point &point, const Geometry::Polygon 
     return dis;
 }
 
+double Geometry::distance(const Geometry::Point &point, const Geometry::Rectangle &rect)
+{
+    double dis = Geometry::distance(point, rect[0], rect[3]);
+    dis = std::min(dis, Geometry::distance(point, rect[0], rect[1]));
+    dis = std::min(dis, Geometry::distance(point, rect[1], rect[2]));
+    dis = std::min(dis, Geometry::distance(point, rect[2], rect[3]));
+    return dis;
+}
+
 
 bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Line &line, const bool infinite)
 {
@@ -358,6 +368,330 @@ bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Polygon &
                 break;
             }
             if (polygon.index(points[i]) == SIZE_MAX || polygon.index(points[j]) == SIZE_MAX)
+            {
+                continue;
+            }
+
+            if (points[i].value > 0 && points[j].value > 0)
+            {
+                points.erase(points.begin() + j);
+                --count;
+            }
+            else if (points[i].value < 0 && points[j].value < 0)
+            {
+                points.erase(points.begin() + i);
+                --count;
+            }
+            else
+            {
+                points.erase(points.begin() + j--);
+                points.erase(points.begin() + i);
+                --count;
+                --count;
+            }
+        }
+
+        return std::count_if(points.begin(), points.end(), [](const Geometry::MarkedPoint &p) { return p.value != 0; }) % 2 == 1;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Rectangle &rect, const bool coincide)
+{
+    if (!rect.empty() && Geometry::is_inside(point, rect.bounding_rect(), coincide))
+    {
+        if (coincide)
+        {
+            for (size_t i = 1; i < 4; ++i)
+            {
+                if (Geometry::is_inside(point, rect[i-1], rect[i]))
+                {
+                    return true;
+                }
+            }
+            if (Geometry::is_inside(point, rect[0], rect[3]))
+            {
+                return true;
+            }
+        }
+        else
+        {
+            for (size_t i = 1; i < 4; ++i)
+            {
+                if (Geometry::is_inside(point, rect[i-1], rect[i]))
+                {
+                    return false;
+                }
+            }
+            if (Geometry::is_inside(point, rect[0], rect[3]))
+            {
+                return false;
+            }
+        }
+
+        double x = (-DBL_MAX);
+        std::vector<Geometry::MarkedPoint> points;
+        for (const Geometry::Point &p : rect)
+        {
+            x = std::max(x, p.x);
+            points.emplace_back(p.x, p.y);
+        }
+
+        Geometry::Point temp, end(x + 80, point.y); // 找到交点并计算其几何数
+        for (size_t i = 1, count = points.size(); i < count; ++i)
+        {
+            if (!Geometry::is_parallel(point, end, points[i], points[i - 1]) &&
+                Geometry::is_intersected(point, end, points[i], points[i - 1], temp))
+            {
+                points.insert(points.begin() + i++, Geometry::MarkedPoint(temp.x, temp.y, false));
+                ++count;
+                if (Geometry::cross(temp, end, points[i], points[i - 1]) >= 0)
+                {
+                    points[i - 1].value = -1;
+                }
+                else
+                {
+                    points[i - 1].value = 1;
+                }
+            }
+        }
+
+        if (points.size() == 4) // 无交点
+        {
+            return false;
+        }
+
+        // 去除重复交点
+        for (size_t count, j, i = points.size() - 1; i > 0; --i)
+        {
+            count = points[i].original ? 0 : 1;
+            for (j = i; j > 0; --j)
+            {
+                if (std::abs(points[i].x - points[j - 1].x) > Geometry::EPSILON || 
+                    std::abs(points[i].y - points[j - 1].y) > Geometry::EPSILON)
+                {
+                    break;
+                }
+                if (!points[j - 1].original)
+                {
+                    ++count;
+                }
+            }
+            if (count < 2)
+            {
+                continue;
+            }
+
+            int value = 0;
+            for (size_t k = i; k > j; --k)
+            {
+                if (!points[k].original)
+                {
+                    value += points[k].value;
+                }
+            }
+            if (!points[j].original)
+            {
+                value += points[j].value;
+            }
+            if (value == 0)
+            {
+                for (size_t k = i; k > j; --k)
+                {
+                    if (!points[k].original)
+                    {
+                        points.erase(points.begin() + k);
+                    }
+                }
+                if (!points[j].original)
+                {
+                    points.erase(points.begin() + j);
+                }
+            }
+            else
+            {
+                bool flag = false;
+                for (size_t k = i; k > j; --k)
+                {
+                    flag = (flag || points[k].original);
+                    points.erase(points.begin() + k);
+                }
+                points[j].value = value;
+                points[j].original = (flag || points[j].original);
+            }
+            i = j > 0 ? j : 1;
+        }
+
+        // 处理重边上的交点
+        for (size_t i = 0, j = 1, count = points.size(); j < count; i = j)
+        {
+            while (i < count && points[i].value == 0)
+            {
+                ++i;
+            }
+            j = i + 1;
+            while (j < count && points[j].value == 0)
+            {
+                ++j;
+            }
+            if (j >= count)
+            {
+                break;
+            }
+            if (rect.index(points[i]) == SIZE_MAX || rect.index(points[j]) == SIZE_MAX)
+            {
+                continue;
+            }
+
+            if (points[i].value > 0 && points[j].value > 0)
+            {
+                points.erase(points.begin() + j);
+                --count;
+            }
+            else if (points[i].value < 0 && points[j].value < 0)
+            {
+                points.erase(points.begin() + i);
+                --count;
+            }
+            else
+            {
+                points.erase(points.begin() + j--);
+                points.erase(points.begin() + i);
+                --count;
+                --count;
+            }
+        }
+
+        return std::count_if(points.begin(), points.end(), [](const Geometry::MarkedPoint &p) { return p.value != 0; }) % 2 == 1;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Square &square, const bool coincide)
+{
+    if (Geometry::is_inside(point, Geometry::Circle(square.center(), square.outer_circle_radius())))
+    {
+        if (Geometry::is_inside(point, Geometry::Circle(square.center(), square.inner_cicle_radius()), coincide))
+        {
+            return true;
+        }
+        
+        double x = (-DBL_MAX);
+        std::vector<Geometry::MarkedPoint> points;
+        for (const Geometry::Point &p : square)
+        {
+            x = std::max(x, p.x);
+            points.emplace_back(p.x, p.y);
+        }
+
+        Geometry::Point temp, end(x + 80, point.y); // 找到交点并计算其几何数
+        for (size_t i = 1, count = points.size(); i < count; ++i)
+        {
+            if (!Geometry::is_parallel(point, end, points[i], points[i - 1]) &&
+                Geometry::is_intersected(point, end, points[i], points[i - 1], temp))
+            {
+                points.insert(points.begin() + i++, Geometry::MarkedPoint(temp.x, temp.y, false));
+                ++count;
+                if (Geometry::cross(temp, end, points[i], points[i - 1]) >= 0)
+                {
+                    points[i - 1].value = -1;
+                }
+                else
+                {
+                    points[i - 1].value = 1;
+                }
+            }
+        }
+
+        if (points.size() == 4) // 无交点
+        {
+            return false;
+        }
+
+        // 去除重复交点
+        for (size_t count, j, i = points.size() - 1; i > 0; --i)
+        {
+            count = points[i].original ? 0 : 1;
+            for (j = i; j > 0; --j)
+            {
+                if (std::abs(points[i].x - points[j - 1].x) > Geometry::EPSILON || 
+                    std::abs(points[i].y - points[j - 1].y) > Geometry::EPSILON)
+                {
+                    break;
+                }
+                if (!points[j - 1].original)
+                {
+                    ++count;
+                }
+            }
+            if (count < 2)
+            {
+                continue;
+            }
+
+            int value = 0;
+            for (size_t k = i; k > j; --k)
+            {
+                if (!points[k].original)
+                {
+                    value += points[k].value;
+                }
+            }
+            if (!points[j].original)
+            {
+                value += points[j].value;
+            }
+            if (value == 0)
+            {
+                for (size_t k = i; k > j; --k)
+                {
+                    if (!points[k].original)
+                    {
+                        points.erase(points.begin() + k);
+                    }
+                }
+                if (!points[j].original)
+                {
+                    points.erase(points.begin() + j);
+                }
+            }
+            else
+            {
+                bool flag = false;
+                for (size_t k = i; k > j; --k)
+                {
+                    flag = (flag || points[k].original);
+                    points.erase(points.begin() + k);
+                }
+                points[j].value = value;
+                points[j].original = (flag || points[j].original);
+            }
+            i = j > 0 ? j : 1;
+        }
+
+        // 处理重边上的交点
+        for (size_t i = 0, j = 1, count = points.size(); j < count; i = j)
+        {
+            while (i < count && points[i].value == 0)
+            {
+                ++i;
+            }
+            j = i + 1;
+            while (j < count && points[j].value == 0)
+            {
+                ++j;
+            }
+            if (j >= count)
+            {
+                break;
+            }
+            if (square.index(points[i]) == SIZE_MAX || square.index(points[j]) == SIZE_MAX)
             {
                 continue;
             }
@@ -785,6 +1119,38 @@ bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry
     }
 }
 
+bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry::Rectangle &rect, const bool inside)
+{
+    if (polyline.empty() || rect.empty() || !Geometry::is_intersected(rect.bounding_rect(), polyline.bounding_rect()))
+    {
+        return false;
+    }
+
+    Geometry::Point point;
+    for (size_t i = 1, count0 = polyline.size(); i < count0; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(polyline[i-1], polyline[i], rect.last_point(j), rect[j], point))
+            {
+                return true;
+            }
+            else if (inside && Geometry::is_inside(polyline[i-1], rect))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        return Geometry::is_inside(polyline.back(), rect);
+    }
+    else
+    {
+        return false;
+    }
+}
+
 bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry::Circle &circle)
 {
     for (size_t i = 0, count = polyline.size(); i < count; ++i)
@@ -834,6 +1200,44 @@ bool Geometry::is_intersected(const Geometry::Polygon &polygon0, const Geometry:
     return false;
 }
 
+bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::Rectangle &rect, const bool inside)
+{
+    if (polygon.empty() || rect.empty() || !Geometry::is_intersected(polygon.bounding_rect(), rect.bounding_rect()))
+    {
+        return false;
+    }
+
+    Geometry::Point point;
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(polygon[i-1], polygon[i], rect.last_point(j), rect[j], point))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        for (const Geometry::Point &point : polygon)
+        {
+            if (Geometry::is_inside(point, rect, true))
+            {
+                return true;
+            }
+        }
+        for (const Geometry::Point &point : rect)
+        {
+            if (Geometry::is_inside(point, polygon, true))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::Circle &circle, const bool inside)
 {
     for (size_t i = 1, count = polygon.size(); i < count; ++i)
@@ -864,6 +1268,133 @@ bool Geometry::is_intersected(const Geometry::Circle &circle0, const Geometry::C
         const double distance = Geometry::distance(circle0, circle1);
         return distance <= circle0.radius + circle1.radius && distance >= std::abs(circle0.radius - circle1.radius);
     }
+}
+
+bool Geometry::is_intersected(const Geometry::Rectangle &rect0, const Geometry::Rectangle &rect1, const bool inside)
+{
+    if (rect0.empty() || rect1.empty() || !Geometry::is_intersected(rect0.bounding_rect(), rect1.bounding_rect()))
+    {
+        return false;
+    }
+
+    Geometry::Point point;
+    for (size_t i = 0; i < 4; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(rect0.last_point(i), rect0[i], rect1.last_point(j), rect1[j], point))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        for (const Geometry::Point &point : rect0)
+        {
+            if (Geometry::is_inside(point, rect1, true))
+            {
+                return true;
+            }
+        }
+        for (const Geometry::Point &point : rect1)
+        {
+            if (Geometry::is_inside(point, rect0, true))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Geometry::is_intersected(const Geometry::Rectangle &rect, const Geometry::Circle &circle, const bool inside)
+{
+    if (circle.empty() || rect.empty() || !Geometry::is_intersected(rect.bounding_rect(), circle.bounding_rect()))
+    {
+        return false;
+    }
+
+    if (inside)
+    {
+        for (const Geometry::Point &point : rect)
+        {
+            if (Geometry::is_inside(point, circle))
+            {
+                return true;
+            }
+        }
+    }
+    if (Geometry::distance(circle, rect) <= circle.radius)
+    {
+        return true;
+    }
+    return inside && Geometry::is_inside(circle, rect);
+}
+
+bool Geometry::is_intersected(const Geometry::Square &square0, const Geometry::Square &square1, const bool inside)
+{
+    if (square0.empty() || square1.empty() || !Geometry::is_intersected(Geometry::Circle(square0.center(), square0.outer_circle_radius()),
+        Geometry::Circle(square1.center(), square1.outer_circle_radius())))
+    {
+        return false;
+    }
+
+    Geometry::Point point;
+    for (size_t i = 0; i < 4; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(square0.last_point(i), square0[i], square1.last_point(j), square1[j], point))
+            {
+                return true;
+            }
+        }
+    }
+
+    if (inside)
+    {
+        for (const Geometry::Point &point : square0)
+        {
+            if (Geometry::is_inside(point, square1, true))
+            {
+                return true;
+            }
+        }
+        for (const Geometry::Point &point : square1)
+        {
+            if (Geometry::is_inside(point, square0, true))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Geometry::is_intersected(const Geometry::Square &square, const Geometry::Circle &circle, const bool inside)
+{
+    if (square.empty() || circle.empty() || !Geometry::is_intersected(circle,
+        Geometry::Circle(square.center(), square.outer_circle_radius())))
+    {
+        return false;
+    }
+
+    if (inside)
+    {
+        for (const Geometry::Point &point : square)
+        {
+            if (Geometry::is_inside(point, circle))
+            {
+                return true;
+            }
+        }
+    }
+    if (Geometry::distance(circle, square) <= circle.radius)
+    {
+        return true;
+    }
+    return inside && Geometry::is_inside(circle, square);
 }
 
 bool Geometry::is_intersected(const Geometry::AABBRect &rect, const Geometry::Point &point0, const Geometry::Point &point1)

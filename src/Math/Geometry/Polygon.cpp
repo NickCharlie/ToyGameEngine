@@ -27,6 +27,12 @@ Geometry::Polygon::Polygon(std::vector<Geometry::Point>::const_iterator begin, s
     }
 }
 
+Geometry::Polygon::Polygon(std::array<Point, 4>::const_iterator begin, std::array<Point, 4>::const_iterator end)
+    : Geometry::Polyline(begin, end)
+{
+    _points.emplace_back(_points.front());
+}
+
 Geometry::Polygon::Polygon(const std::initializer_list<Geometry::Point> &points)
     : Geometry::Polyline(points)
 {
@@ -59,6 +65,17 @@ Geometry::Polygon &Geometry::Polygon::operator=(const Geometry::Polygon &polygon
     {
         Geometry::Polyline::operator=(polygon);
     }
+    return *this;
+}
+
+Geometry::Polygon &Geometry::Polygon::operator=(const Rectangle &rect)
+{
+    _points.clear();
+    for (const Geometry::Point &point : rect)
+    {
+        _points.emplace_back(point);
+    }
+    _points.emplace_back(_points.front());
     return *this;
 }
 

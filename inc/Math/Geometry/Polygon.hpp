@@ -1,5 +1,6 @@
 #pragma once
 #include "Math/Geometry/Polyline.hpp"
+#include "Math/Geometry/Rectangle.hpp"
 
 
 namespace ToyGameEngine
@@ -17,6 +18,8 @@ namespace ToyGameEngine
 
                 Polygon(std::vector<Point>::const_iterator begin, std::vector<Point>::const_iterator end);
 
+                Polygon(std::array<Point, 4>::const_iterator begin, std::array<Point, 4>::const_iterator end);
+
                 Polygon(const std::initializer_list<Point> &points);
 
                 Polygon(const Polyline &polyline);
@@ -24,6 +27,8 @@ namespace ToyGameEngine
                 Polygon(const AABBRect &rect);
 
                 Polygon &operator=(const Polygon &polygon);
+
+                Polygon &operator=(const Rectangle &rect);
 
                 Polygon *clone() const override;
 
