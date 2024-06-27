@@ -7,7 +7,7 @@ namespace ToyGameEngine
     {
         namespace Geometry
         {
-            enum Type {GEOMETRY_OBJECT, POINT, POLYLINE, AABBRECT, POLYGON, TRIANGLE, CIRCLE, LINE, BEZIER};
+            enum Type {GEOMETRY_OBJECT, POINT, POLYLINE, AABBRECT, POLYGON, TRIANGLE, SQUARE, RECTANGLE, CIRCLE, LINE, BEZIER};
 
             class AABBRect;
 

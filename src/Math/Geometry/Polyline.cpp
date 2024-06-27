@@ -32,6 +32,14 @@ Geometry::Polyline::Polyline(std::vector<Geometry::Point>::const_iterator begin,
     }
 }
 
+Geometry::Polyline::Polyline(std::array<Point, 4>::const_iterator begin, std::array<Point, 4>::const_iterator end)
+{
+    while (begin != end)
+    {
+        _points.emplace_back(*(begin++));
+    }
+}
+
 Geometry::Polyline::Polyline(const std::initializer_list<Geometry::Point> &points)
 {
     _points.emplace_back(*points.begin());

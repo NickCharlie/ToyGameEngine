@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <array>
 #include "Math/Geometry/Point.hpp"
 
 
@@ -20,6 +21,8 @@ namespace ToyGameEngine
                 Polyline(const Polyline &polyline);
 
                 Polyline(std::vector<Point>::const_iterator begin, std::vector<Point>::const_iterator end);
+
+                Polyline(std::array<Point, 4>::const_iterator begin, std::array<Point, 4>::const_iterator end);
 
                 Polyline(const std::initializer_list<Point> &points);
 
