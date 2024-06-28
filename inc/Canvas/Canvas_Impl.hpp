@@ -7,6 +7,8 @@
 #include "Math/Geometry/Polygon.hpp"
 #include "Math/Geometry/Polyline.hpp"
 #include "Math/Geometry/Triangle.hpp"
+#include "Math/Geometry/Square.hpp"
+#include "Math/Geometry/Rectangle.hpp"
 #include "Math/Geometry/GeometryObject.hpp"
 
 #include <QPainter>

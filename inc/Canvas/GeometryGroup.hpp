@@ -7,6 +7,8 @@
 #include "Math/Geometry/Polygon.hpp"
 #include "Math/Geometry/Polyline.hpp"
 #include "Math/Geometry/Triangle.hpp"
+#include "Math/Geometry/Square.hpp"
+#include "Math/Geometry/Rectangle.hpp"
 #include "Math/Geometry/GeometryObject.hpp"
 
 namespace ToyGameEngine {
@@ -61,45 +63,31 @@ namespace ToyGameEngine {
 
             Math::Geometry::GeometryObject* operator[](const size_t index);
 
+            const Math::Geometry::GeometryObject* operator[](const size_t index) const;
+
             void clear();
 
             const size_t size() const;
 
             void append(GeometryGroup* container);
 
-            void append(Math::Geometry::Polyline* polyline);
-
-            void append(Math::Geometry::AABBRect* rect);
-
-            void append(Math::Geometry::Circle* circle);
-
-            void append(Math::Geometry::Polygon* polygon);
-
-            void append(Math::Geometry::Line* line);
-
-            void append(Math::Geometry::Triangle* triangle);
-
-            void append(Math::Geometry::Point* point);
+            void append(Math::Geometry::GeometryObject* object);
 
             void append(GeometryGroup &group, const bool merge = true);
 
-            void insert(const size_t index, GeometryGroup *container);
-
-            void insert(const size_t index, Math::Geometry::Polyline *polyline);
-
-            void insert(const size_t index, Math::Geometry::Bezier *bezier);
+            void insert(const size_t index, Math::Geometry::GeometryObject* object);
 
             std::vector<Math::Geometry::GeometryObject*>::iterator remove(const size_t index);
 
-            std::vector<Math::Geometry::GeometryObject*>::iterator remove(const std::vector<Math::Geometry::GeometryObject*>::iterator &it);
+            std::vector<Math::Geometry::GeometryObject*>::iterator remove(const std::vector<Math::Geometry::GeometryObject*>::iterator& it);
 
-            std::vector<Math::Geometry::GeometryObject*>::iterator remove(const std::vector<Math::Geometry::GeometryObject*>::reverse_iterator &it);
+            std::vector<Math::Geometry::GeometryObject*>::iterator remove(const std::vector<Math::Geometry::GeometryObject*>::reverse_iterator& it);
 
             Math::Geometry::GeometryObject* pop(const size_t index);
 
-            Math::Geometry::GeometryObject* pop(const std::vector<Math::Geometry::GeometryObject*>::iterator &it);
+            Math::Geometry::GeometryObject* pop(const std::vector<Math::Geometry::GeometryObject*>::iterator& it);
 
-            Math::Geometry::GeometryObject* pop(const std::vector<Math::Geometry::GeometryObject*>::reverse_iterator &it);
+            Math::Geometry::GeometryObject* pop(const std::vector<Math::Geometry::GeometryObject*>::reverse_iterator& it);
 
             Math::Geometry::GeometryObject* pop_front();
 
