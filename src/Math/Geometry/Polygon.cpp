@@ -236,7 +236,7 @@ void Geometry::Polygon::remove(const size_t index)
     }
     else if (index == size())
     {
-        _points.front() == _points.back();
+        _points.front() = _points.back();
     }
 }
 
