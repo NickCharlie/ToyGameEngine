@@ -10,10 +10,7 @@ namespace ToyGameEngine {
     namespace Canvas {
 
         class ICanvas : public ICanvas_Impl, public QWidget {
-            Q_OBJECT
         public:
-
-            QPainter* painter = new QPainter(this);
 
             ICanvas(QWidget *parent = nullptr) : QWidget(parent) {}
 
@@ -35,6 +32,10 @@ namespace ToyGameEngine {
             void draw_polyline(QPainter& painter, Math::Geometry::Polyline& polyline);
 
             void draw_triangle(QPainter& painter, Math::Geometry::Triangle& triangle);
+
+            GeometryGroup& get_group();
+
+            void push_to_group(Math::Geometry::GeometryObject* o);
 
         private:
             GeometryGroup group;

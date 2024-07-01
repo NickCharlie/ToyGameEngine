@@ -8,18 +8,24 @@ GeometryGroup::GeometryGroup() {
 
 }
 
+GeometryGroup::~GeometryGroup() {
+    
+}
+
 GeometryGroup::GeometryGroup(const GeometryGroup& group) {
 
 }
 
-GeometryGroup::GeometryGroup(const std::initializer_list<Math::Geometry::GeometryObject*>& groups)
- : _objects(groups.begin(), groups.end()) {
-
+GeometryGroup::GeometryGroup(const std::initializer_list<Math::Geometry::GeometryObject*>& groups) {
+    for (auto obj : groups) {
+        _objects.push_back(obj->clone());
+    }
 }
 
-GeometryGroup::GeometryGroup(std::vector<Math::Geometry::GeometryObject*>::const_iterator begin, std::vector<Math::Geometry::GeometryObject*>::const_iterator end)
- : _objects(begin, end){
-
+GeometryGroup::GeometryGroup(std::vector<Math::Geometry::GeometryObject*>::const_iterator begin, std::vector<Math::Geometry::GeometryObject*>::const_iterator end) {
+    for (auto it = begin; it != end; ++it) {
+        _objects.push_back((*it)->clone());
+    }
 }
 
 const bool& GeometryGroup::visible() const {

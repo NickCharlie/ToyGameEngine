@@ -20,7 +20,7 @@ namespace ToyGameEngine {
 		class ICanvas_Impl {
 
 		public:
-			virtual ~ICanvas_Impl() = default;
+			virtual ~ICanvas_Impl() {}
 
 			virtual void draw_line(QPainter& painter, Math::Geometry::Line& line) = false;
 
