@@ -12,18 +12,31 @@ GeometryGroup::~GeometryGroup() {
     
 }
 
-GeometryGroup::GeometryGroup(const GeometryGroup& group) {
+GeometryGroup::GeometryGroup(const GeometryGroup& group) 
+{
+    _visible = group.visible();
 
+    for (Math::Geometry::GeometryObject* obj : group._objects) 
+    {
+        if (obj) 
+        {
+            _objects.push_back(obj->clone());
+        }
+    }
 }
 
-GeometryGroup::GeometryGroup(const std::initializer_list<Math::Geometry::GeometryObject*>& groups) {
-    for (auto obj : groups) {
+GeometryGroup::GeometryGroup(const std::initializer_list<Math::Geometry::GeometryObject*>& objs) 
+{
+    for (Math::Geometry::GeometryObject* obj : objs) 
+    {
         _objects.push_back(obj->clone());
     }
 }
 
-GeometryGroup::GeometryGroup(std::vector<Math::Geometry::GeometryObject*>::const_iterator begin, std::vector<Math::Geometry::GeometryObject*>::const_iterator end) {
-    for (auto it = begin; it != end; ++it) {
+GeometryGroup::GeometryGroup(std::vector<Math::Geometry::GeometryObject*>::const_iterator begin, std::vector<Math::Geometry::GeometryObject*>::const_iterator end) 
+{
+    for (auto it = begin; it != end; ++it) 
+    {
         _objects.push_back((*it)->clone());
     }
 }
@@ -41,58 +54,26 @@ void GeometryGroup::hide()
     _visible = false;
 }
 
-GeometryGroup* GeometryGroup::clone() const {
-    std::vector<Math::Geometry::GeometryObject*> containers;
+GeometryGroup* GeometryGroup::clone() const 
+{
+    GeometryGroup* g = new GeometryGroup();
     for (const Math::Geometry::GeometryObject* geo : _objects)
     {
-        switch (geo->type()) {
-        case Math::Geometry::Type::AABBRECT:
-            containers.push_back(dynamic_cast<const Math::Geometry::AABBRect*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::BEZIER:
-            containers.push_back(dynamic_cast<const Math::Geometry::Bezier*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::CIRCLE:
-            containers.push_back(dynamic_cast<const Math::Geometry::Circle*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::LINE:
-            containers.push_back(dynamic_cast<const Math::Geometry::Line*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::POLYLINE:
-            containers.push_back(dynamic_cast<const Math::Geometry::Polyline*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::POINT:
-            containers.push_back(dynamic_cast<const Math::Geometry::Point*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::POLYGON:
-            containers.push_back(dynamic_cast<const Math::Geometry::Polygon*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::RECTANGLE:
-            containers.push_back(dynamic_cast<const Math::Geometry::Rectangle*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::SQUARE:
-            containers.push_back(dynamic_cast<const Math::Geometry::Square*>(geo)->clone());
-            break;
-        case Math::Geometry::Type::TRIANGLE:
-            containers.push_back(dynamic_cast<const Math::Geometry::Triangle*>(geo)->clone());
-            break;
-        default:
-            break;
-        }
+        g->_objects.push_back(geo->clone());
     }
-
-    GeometryGroup *g = new GeometryGroup(containers.cbegin(), containers.cend());
     return g;
 }
 
-void GeometryGroup::transfer(GeometryGroup& group) {
-    
-    group.clear();
-    group._objects.assign(_objects.begin(), _objects.end());
-    _objects.clear();
+void GeometryGroup::clone(GeometryGroup& group) 
+{
+    for (const Math::Geometry::GeometryObject* geo : _objects) 
+    {
+        group._objects.push_back(geo->clone());
+    }
 }
 
-GeometryGroup& GeometryGroup::operator=(const GeometryGroup &group) {
+GeometryGroup& GeometryGroup::operator=(const GeometryGroup &group) 
+{
 
     if (this != &group) {
         // Math::Geometry::GeometryObject::operator=(group);
@@ -103,43 +84,7 @@ GeometryGroup& GeometryGroup::operator=(const GeometryGroup &group) {
         _objects.clear();
         _objects.shrink_to_fit();
 
-        for (const Math::Geometry::GeometryObject* geo : group._objects) {
-
-            switch (geo->type()) {
-            case Math::Geometry::Type::AABBRECT:
-                _objects.push_back(dynamic_cast<const Math::Geometry::AABBRect*>(geo)->clone());
-            break;
-            case Math::Geometry::Type::BEZIER:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Bezier*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::CIRCLE:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Circle*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::LINE:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Line*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::POLYLINE:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Polyline*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::POINT:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Point*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::POLYGON:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Polygon*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::RECTANGLE:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Rectangle*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::SQUARE:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Square*>(geo)->clone());
-                break;
-            case Math::Geometry::Type::TRIANGLE:
-                _objects.push_back(dynamic_cast<const Math::Geometry::Triangle*>(geo)->clone());
-                break;
-            default:
-                break;
-            }
-        }
+        _objects = group._objects;
         _visible = group._visible;
     }
     return *this;

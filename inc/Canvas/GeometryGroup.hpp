@@ -22,7 +22,7 @@ namespace ToyGameEngine {
         public:
             GeometryGroup();
             GeometryGroup(const GeometryGroup& group);
-            GeometryGroup(const std::initializer_list<Math::Geometry::GeometryObject*>& groups);
+            GeometryGroup(const std::initializer_list<Math::Geometry::GeometryObject*>& objs);
             GeometryGroup(std::vector<Math::Geometry::GeometryObject*>::const_iterator begin, std::vector<Math::Geometry::GeometryObject*>::const_iterator end);
 
             ~GeometryGroup();
@@ -33,7 +33,7 @@ namespace ToyGameEngine {
             void hide();
 
             GeometryGroup* clone() const;
-            void transfer(GeometryGroup& group);
+            void clone(GeometryGroup& group);
 
             GeometryGroup &operator=(const GeometryGroup &group);
 

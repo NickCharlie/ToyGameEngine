@@ -9,6 +9,9 @@ void ICanvas::paintEvent(QPaintEvent *event) {
 }
 
 void ICanvas::push_to_group(Math::Geometry::GeometryObject* o) {
+    if (group.size() >= 70) {
+        return;
+    }
     group.append(o);
 }
 

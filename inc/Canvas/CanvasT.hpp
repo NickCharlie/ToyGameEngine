@@ -68,7 +68,10 @@ namespace ToyGameEngine {
 
 		template<typename Shape>
 		void ICanvasT<Shape>::push_to_group(Math::Geometry::GeometryObject* o) {
-    		group.append(o);
+    		if (group.size() >= 70) {
+				return;
+			}
+			group.append(o);
 		}
 
 		template<typename Shape>
