@@ -209,12 +209,26 @@ double Geometry::distance(const Geometry::Point &point, const Geometry::Rectangl
 
 bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Line &line, const bool infinite)
 {
-    return Geometry::distance(point, line.front(), line.back(), infinite) < Geometry::EPSILON;
+    if (std::abs(Geometry::cross(line.back() - line.front(), point - line.front())) < Geometry::EPSILON)
+    {
+        return infinite || Geometry::distance(point, line.front()) + Geometry::distance(point, line.back()) < line.length() + Geometry::EPSILON;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Point &start, const Geometry::Point &end, const bool infinite)
 {
-    return Geometry::distance(point, start, end, infinite) < Geometry::EPSILON;
+    if (std::abs(Geometry::cross(end - start, point - start)) < Geometry::EPSILON)
+    {
+        return infinite || Geometry::distance(point, start) + Geometry::distance(point, end) < Geometry::distance(start, end) + Geometry::EPSILON;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Polyline &polyline)
