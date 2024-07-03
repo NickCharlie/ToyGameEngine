@@ -1169,7 +1169,7 @@ bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry
 {
     for (size_t i = 0, count = polyline.size(); i < count; ++i)
     {
-        if (Geometry::distance(circle, polyline[i - 1], polyline[1]) < circle.radius)
+        if (Geometry::distance(circle, polyline[i - 1], polyline[i]) < circle.radius)
         {
             return true;
         }
@@ -1256,7 +1256,7 @@ bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::
 {
     for (size_t i = 1, count = polygon.size(); i < count; ++i)
     {
-        if (Geometry::distance(circle, polygon[i - 1], polygon[1]) < circle.radius)
+        if (Geometry::distance(circle, polygon[i - 1], polygon[i]) < circle.radius)
         {
             return true;
         }
