@@ -8,8 +8,12 @@ GeometryGroup::GeometryGroup() {
 
 }
 
-GeometryGroup::~GeometryGroup() {
-    
+GeometryGroup::~GeometryGroup()
+{
+    for (size_t i = 0, count = _objects.size(); i < count; ++i)
+    {
+        delete _objects[i];
+    }
 }
 
 GeometryGroup::GeometryGroup(const GeometryGroup& group) 
@@ -41,7 +45,8 @@ GeometryGroup::GeometryGroup(std::vector<Math::Geometry::GeometryObject*>::const
     }
 }
 
-const bool& GeometryGroup::visible() const {
+const bool GeometryGroup::visible() const
+{
     return _visible;
 }
 
@@ -74,11 +79,12 @@ void GeometryGroup::clone(GeometryGroup& group)
 
 GeometryGroup& GeometryGroup::operator=(const GeometryGroup &group) 
 {
-
-    if (this != &group) {
+    if (this != &group)
+    {
         // Math::Geometry::GeometryObject::operator=(group);
 
-        for (size_t i = 0; i < _objects.size(); ++i) {
+        for (size_t i = 0, count = _objects.size(); i < count; ++i)
+        {
             delete _objects[i];
         }
         _objects.clear();

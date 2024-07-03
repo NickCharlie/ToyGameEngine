@@ -27,7 +27,7 @@ namespace ToyGameEngine {
 
             ~GeometryGroup();
 
-            const bool& visible() const;
+            const bool visible() const;
 
             void show();
             void hide();
