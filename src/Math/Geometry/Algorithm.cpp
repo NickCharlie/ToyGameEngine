@@ -6,6 +6,7 @@
 #include "Math/Geometry/AABBRect.hpp"
 #include "Math/Geometry/Square.hpp"
 #include "Math/Geometry/Line.hpp"
+#include "Math/Geometry/Bezier.hpp"
 #include "Math/Geometry/Circle.hpp"
 #include "Math/Geometry/Triangle.hpp"
 #include "Math/Geometry/EarCut/EarCut.hpp"
@@ -1058,6 +1059,102 @@ bool Geometry::is_intersected(const Geometry::Line &line0, const Geometry::Line 
     return Geometry::is_intersected(line0.front(), line0.back(), line1.front(), line1.back(), output, infinite);
 }
 
+bool Geometry::is_intersected(const Geometry::Point &start, const Geometry::Point &end, const Geometry::Polyline &polyline, const bool infinite)
+{
+    if (polyline.empty() || (!infinite && !Geometry::is_intersected(polyline.bounding_rect(), start, end)))
+    {
+        return false;
+    }
+
+    Geometry::Point point;
+    for (size_t i = 1, count = polyline.size(); i < count; ++i)
+    {
+        if (Geometry::is_intersected(start, end, polyline[i - 1], polyline[i], point, infinite))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Geometry::is_intersected(const Geometry::Point &start, const Geometry::Point &end, const Geometry::Polygon &polygon, const bool infinite, const bool inside)
+{
+    if (polygon.empty() || (!infinite && !Geometry::is_intersected(polygon.bounding_rect(), start, end)))
+    {
+        return false;
+    }
+
+    Geometry::Point point;
+    if (infinite)
+    {
+        for (size_t i = 1, count = polygon.size(); i < count; ++i)
+        {
+            if (Geometry::is_intersected(start, end, polygon[i - 1], polygon[i], point, true))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        for (size_t i = 1, count = polygon.size(); i < count; ++i)
+        {
+            if (Geometry::is_intersected(start, end, polygon[i - 1], polygon[i], point))
+            {
+                return true;
+            }
+        }
+        if (inside)
+        {
+            return Geometry::is_inside(start, polygon) || Geometry::is_inside(end, polygon);
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
+bool Geometry::is_intersected(const Geometry::Point &start, const Geometry::Point &end, const Geometry::Rectangle &rect, const bool infinite, const bool inside)
+{
+    if (rect.empty() || (!infinite && !Geometry::is_intersected(rect.bounding_rect(), start, end)))
+    {
+        return false;
+    }
+
+    Geometry::Point point;
+    if (infinite)
+    {
+        for (size_t i = 1; i < 4; ++i)
+        {
+            if (Geometry::is_intersected(start, end, rect[i - 1], rect[i], point, true))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        for (size_t i = 1; i < 4; ++i)
+        {
+            if (Geometry::is_intersected(start, end, rect[i - 1], rect[i], point))
+            {
+                return true;
+            }
+        }
+        if (inside)
+        {
+            return Geometry::is_inside(start, rect) || Geometry::is_inside(end, rect);
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
 bool Geometry::is_intersected(const Geometry::AABBRect &rect0, const Geometry::AABBRect &rect1, const bool inside)
 {
     if (rect0.empty() || rect1.empty())
@@ -1165,6 +1262,37 @@ bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry
     }
 }
 
+bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry::Triangle &triangle, const bool inside)
+{
+    if (polyline.empty() || triangle.empty())
+    {
+        return false;
+    }
+
+    if (inside)
+    {
+        for (const Geometry::Point &point : polyline)
+        {
+            if (Geometry::is_inside(point, triangle, true))
+            {
+                return true;
+            }
+        }
+    }
+
+    Geometry::Point point;
+    for (size_t i = 1, count = polyline.size(); i < count; ++i)
+    {
+        if (Geometry::is_intersected(triangle[0], triangle[1], polyline[i - 1], polyline[i], point) ||
+            Geometry::is_intersected(triangle[1], triangle[2], polyline[i - 1], polyline[i], point) ||
+            Geometry::is_intersected(triangle[0], triangle[2], polyline[i - 1], polyline[i], point))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry::Circle &circle)
 {
     for (size_t i = 0, count = polyline.size(); i < count; ++i)
@@ -1252,6 +1380,43 @@ bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::
     return false;
 }
 
+bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::Triangle &triangle, const bool inside)
+{
+    if (polygon.empty() || triangle.empty())
+    {
+        return false;
+    }
+
+    if (inside)
+    {
+        for (const Geometry::Point & point : polygon)
+        {
+            if (Geometry::is_inside(point, triangle, true))
+            {
+                return true;
+            }
+        }
+    }
+
+    if (Geometry::is_intersected(triangle[0], triangle[1], polygon, false, inside) ||
+        Geometry::is_intersected(triangle[1], triangle[2], polygon, false, inside) ||
+        Geometry::is_intersected(triangle[0], triangle[2], polygon, false, inside))
+    {
+        return true;
+    }
+
+    if (inside)
+    {
+        if (Geometry::is_inside(triangle[0], polygon, true) ||
+            Geometry::is_inside(triangle[1], polygon, true) ||
+            Geometry::is_inside(triangle[2], polygon, true))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::Circle &circle, const bool inside)
 {
     for (size_t i = 1, count = polygon.size(); i < count; ++i)
@@ -1282,6 +1447,19 @@ bool Geometry::is_intersected(const Geometry::Circle &circle0, const Geometry::C
         const double distance = Geometry::distance(circle0, circle1);
         return distance <= circle0.radius + circle1.radius && distance >= std::abs(circle0.radius - circle1.radius);
     }
+}
+
+bool Geometry::is_intersected(const Geometry::Circle &circle, const Geometry::Triangle &triangle)
+{
+    if (circle.empty() || triangle.empty())
+    {
+        return false;
+    }
+
+    return Geometry::is_inside(circle, triangle, true) ||
+        Geometry::distance(circle, triangle[0], triangle[1]) <= circle.radius ||
+        Geometry::distance(circle, triangle[1], triangle[2]) <= circle.radius ||
+        Geometry::distance(circle, triangle[0], triangle[2]) <= circle.radius;
 }
 
 bool Geometry::is_intersected(const Geometry::Rectangle &rect0, const Geometry::Rectangle &rect1, const bool inside)
@@ -1344,6 +1522,44 @@ bool Geometry::is_intersected(const Geometry::Rectangle &rect, const Geometry::C
         return true;
     }
     return inside && Geometry::is_inside(circle, rect);
+}
+
+bool Geometry::is_intersected(const Geometry::Rectangle &rect, const Geometry::Triangle &triangle, const bool inside)
+{
+    if (rect.empty() || triangle.empty())
+    {
+        return false;
+    }
+
+    if (inside)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            if (Geometry::is_inside(rect[i], triangle, true))
+            {
+                return true;
+            }
+        }
+        for (size_t i = 0; i < 3; ++i)
+        {
+            if (Geometry::is_inside(triangle[i], rect, true))
+            {
+                return true;
+            }
+        }
+    }
+
+    Geometry::Point point;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        if (Geometry::is_intersected(triangle[0], triangle[1], rect[i - 1], rect[i], point) ||
+           Geometry::is_intersected(triangle[1], triangle[2], rect[i - 1], rect[i], point) ||
+           Geometry::is_intersected(triangle[0], triangle[2], rect[i - 1], rect[i], point))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool Geometry::is_intersected(const Geometry::Square &square0, const Geometry::Square &square1, const bool inside)
@@ -1409,6 +1625,37 @@ bool Geometry::is_intersected(const Geometry::Square &square, const Geometry::Ci
         return true;
     }
     return inside && Geometry::is_inside(circle, square);
+}
+
+bool Geometry::is_intersected(const Geometry::Triangle &triangle0, const Geometry::Triangle &triangle1, const bool inside)
+{
+    if (triangle0.empty() || triangle1.empty())
+    {
+        return false;
+    }
+
+    if (inside)
+    {
+        if (Geometry::is_inside(triangle0[0], triangle1, true) || Geometry::is_inside(triangle0[1], triangle1, true) ||
+            Geometry::is_inside(triangle0[2], triangle1, true) || Geometry::is_inside(triangle1[0], triangle0, true) ||
+            Geometry::is_inside(triangle1[1], triangle0, true) || Geometry::is_inside(triangle1[2], triangle0, true))
+        {
+            return true;
+        }
+    }
+
+    Geometry::Point point;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        for (size_t j = 1; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(triangle0[i - 1], triangle0[i % 3], triangle1[j - 1], triangle1[j % 3], point))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool Geometry::is_intersected(const Geometry::AABBRect &rect, const Geometry::Point &point0, const Geometry::Point &point1)
@@ -1538,6 +1785,642 @@ bool Geometry::is_intersected(const Geometry::Point &start, const Geometry::Poin
 bool Geometry::is_intersected(const Geometry::Line &line, const Geometry::Triangle &triangle, Geometry::Point &output0, Geometry::Point &output1)
 {
     return Geometry::is_intersected(line.front(), line.back(), triangle, output0, output1);
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Polyline &polyline0, const Geometry::Polyline &polyline1)
+{
+    Geometry::Point point;
+    for (size_t i = 1, count0 = polyline0.size(); i < count0; ++i)
+    {
+        for (size_t j = 1, count1 = polyline1.size(); j < count1; ++j)
+        {
+            if (Geometry::is_intersected(polyline0[i-1], polyline0[i], polyline1[j-1], polyline1[j], point))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Polyline &polyline, const Geometry::Polygon &polygon, const bool inside)
+{
+    Geometry::Point point;
+    for (size_t i = 1, count0 = polyline.size(); i < count0; ++i)
+    {
+        for (size_t j = 1, count1 = polygon.size(); j < count1; ++j)
+        {
+            if (Geometry::is_intersected(polyline[i-1], polyline[i], polygon[j-1], polygon[j], point))
+            {
+                return true;
+            }
+            else if (inside && Geometry::is_inside(polyline[i-1], polygon))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        return Geometry::is_inside(polyline.back(), polygon);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Polyline &polyline, const Geometry::Rectangle &rect, const bool inside)
+{
+    Geometry::Point point;
+    for (size_t i = 1, count0 = polyline.size(); i < count0; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(polyline[i-1], polyline[i], rect.last_point(j), rect[j], point))
+            {
+                return true;
+            }
+            else if (inside && Geometry::is_inside(polyline[i-1], rect))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        return Geometry::is_inside(polyline.back(), rect);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Polygon &polygon0, const Geometry::Polygon &polygon1, const bool inside)
+{
+    Geometry::Point point;
+    for (size_t i = 1, count0 = polygon0.size(); i < count0; ++i)
+    {
+        for (size_t j = 1, count1 = polygon1.size(); j < count1; ++j)
+        {
+            if (Geometry::is_intersected(polygon0[i-1], polygon0[i], polygon1[j-1], polygon1[j], point))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        for (const Geometry::Point &point : polygon0)
+        {
+            if (Geometry::is_inside(point, polygon1, true))
+            {
+                return true;
+            }
+        }
+        for (const Geometry::Point &point : polygon1)
+        {
+            if (Geometry::is_inside(point, polygon0, true))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Polygon &polygon, const Geometry::Rectangle &rect, const bool inside)
+{
+    Geometry::Point point;
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(polygon[i-1], polygon[i], rect.last_point(j), rect[j], point))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        for (const Geometry::Point &point : polygon)
+        {
+            if (Geometry::is_inside(point, rect, true))
+            {
+                return true;
+            }
+        }
+        for (const Geometry::Point &point : rect)
+        {
+            if (Geometry::is_inside(point, polygon, true))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Rectangle &rect0, const Geometry::Rectangle &rect1, const bool inside)
+{
+    Geometry::Point point;
+    for (size_t i = 0; i < 4; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(rect0.last_point(i), rect0[i], rect1.last_point(j), rect1[j], point))
+            {
+                return true;
+            }
+        }
+    }
+    if (inside)
+    {
+        for (const Geometry::Point &point : rect0)
+        {
+            if (Geometry::is_inside(point, rect1, true))
+            {
+                return true;
+            }
+        }
+        for (const Geometry::Point &point : rect1)
+        {
+            if (Geometry::is_inside(point, rect0, true))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Rectangle &rect, const Geometry::Circle &circle, const bool inside)
+{
+    if (inside)
+    {
+        for (const Geometry::Point &point : rect)
+        {
+            if (Geometry::is_inside(point, circle))
+            {
+                return true;
+            }
+        }
+    }
+    if (Geometry::distance(circle, rect) <= circle.radius)
+    {
+        return true;
+    }
+    return inside && Geometry::is_inside(circle, rect);
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Square &square0, const Geometry::Square &square1, const bool inside)
+{
+    Geometry::Point point;
+    for (size_t i = 0; i < 4; ++i)
+    {
+        for (size_t j = 0; j < 4; ++j)
+        {
+            if (Geometry::is_intersected(square0.last_point(i), square0[i], square1.last_point(j), square1[j], point))
+            {
+                return true;
+            }
+        }
+    }
+
+    if (inside)
+    {
+        for (const Geometry::Point &point : square0)
+        {
+            if (Geometry::is_inside(point, square1, true))
+            {
+                return true;
+            }
+        }
+        for (const Geometry::Point &point : square1)
+        {
+            if (Geometry::is_inside(point, square0, true))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::Square &square, const Geometry::Circle &circle, const bool inside)
+{
+    if (inside)
+    {
+        for (const Geometry::Point &point : square)
+        {
+            if (Geometry::is_inside(point, circle))
+            {
+                return true;
+            }
+        }
+    }
+    if (Geometry::distance(circle, square) <= circle.radius)
+    {
+        return true;
+    }
+    return inside && Geometry::is_inside(circle, square);
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::AABBRect &rect, const Geometry::Polyline &polyline)
+{
+    for (size_t i = 1, count = polyline.size(); i < count; ++i)
+    {
+        if (Geometry::is_intersected(rect, polyline[i - 1], polyline[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::AABBRect &rect, const Geometry::Polygon &polygon)
+{
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        if (Geometry::is_intersected(rect, polygon[i - 1], polygon[i]))
+        {
+            return true;
+        }
+    }
+    for (size_t i = 0; i < 4; ++i)
+    {
+        if (Geometry::is_inside(rect[i], polygon))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::GeometryObject *object0, const Geometry::GeometryObject *object1, const bool infinite, const bool inside)
+{
+    switch (object0->type())
+    {
+    case Geometry::Type::POLYGON:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polygon *>(object0),
+                *static_cast<const Geometry::Polygon *>(object1), inside);
+        case Geometry::Type::RECTANGLE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polygon *>(object0),
+                *static_cast<const Geometry::Rectangle *>(object1), inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::AABBRect *>(object1),
+                *static_cast<const Geometry::Polygon *>(object0), inside);
+        case Geometry::Type::SQUARE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polygon *>(object0),
+                *static_cast<const Geometry::Square *>(object1), inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object1),
+                *static_cast<const Geometry::Polygon *>(object0), inside);
+        case Geometry::Type::BEZIER:
+            return Geometry::NoAABBTest::is_intersected(static_cast<const Geometry::Bezier *>(object1)->shape(),
+                *static_cast<const Geometry::Polygon *>(object0), inside);
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polygon *>(object0),
+                *static_cast<const Geometry::Circle *>(object1), inside);
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polygon *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1), inside);
+        case Geometry::Type::LINE:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object1)->front(),
+                static_cast<const Geometry::Line *>(object1)->back(),
+                *static_cast<const Geometry::Polygon *>(object0), infinite, inside);
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::Polygon *>(object0), true);
+        default:
+            return false;
+        }
+    case Geometry::Type::RECTANGLE:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polygon *>(object1),
+                *static_cast<const Geometry::Rectangle *>(object0), inside);
+        case Geometry::Type::RECTANGLE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Rectangle *>(object0),
+                *static_cast<const Geometry::Rectangle *>(object1), inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object1),
+                *static_cast<const Geometry::Rectangle *>(object0), inside);
+        case Geometry::Type::SQUARE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Rectangle *>(object0),
+                *static_cast<const Geometry::Square *>(object1), inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object1),
+                *static_cast<const Geometry::Rectangle *>(object0), inside);
+        case Geometry::Type::BEZIER:
+            return Geometry::NoAABBTest::is_intersected(static_cast<const Geometry::Bezier *>(object1)->shape(),
+                *static_cast<const Geometry::Rectangle *>(object0), inside);
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Rectangle *>(object0),
+                *static_cast<const Geometry::Circle *>(object1), inside);
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Rectangle *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1), inside);
+        case Geometry::Type::LINE:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Line *>(object1));
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::AABBRect *>(object0), true);
+        default:
+            return false;
+        }
+    case Geometry::Type::AABBRECT:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Polygon *>(object1));
+        case Geometry::Type::RECTANGLE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Rectangle *>(object1), inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::AABBRect *>(object1), inside);
+        case Geometry::Type::SQUARE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Square *>(object1), inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Polyline *>(object1));
+        case Geometry::Type::BEZIER:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                static_cast<const Geometry::Bezier *>(object1)->shape());
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Circle *>(object1));
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1), inside);
+        case Geometry::Type::LINE:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object0),
+                *static_cast<const Geometry::Line *>(object1));
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::AABBRect *>(object0), true);
+        default:
+            return false;
+        }
+    case Geometry::Type::SQUARE:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polygon *>(object1),
+                *static_cast<const Geometry::Square *>(object0), inside);
+        case Geometry::Type::RECTANGLE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Square *>(object0),
+                *static_cast<const Geometry::Rectangle *>(object1), inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object1),
+                *static_cast<const Geometry::Square *>(object0), inside);
+        case Geometry::Type::SQUARE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Square *>(object0),
+                *static_cast<const Geometry::Square *>(object1), inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object1),
+                *static_cast<const Geometry::Square *>(object0), inside);
+        case Geometry::Type::BEZIER:
+            return Geometry::NoAABBTest::is_intersected(static_cast<const Geometry::Bezier *>(object1)->shape(),
+                *static_cast<const Geometry::Square *>(object0), inside);
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Square *>(object0),
+                *static_cast<const Geometry::Circle *>(object1), inside);
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Square *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1), inside);
+        case Geometry::Type::LINE:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object1)->front(),
+                static_cast<const Geometry::Line *>(object1)->back(),
+                *static_cast<const Geometry::Square *>(object0), infinite, inside);
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::Square *>(object0), true);
+        default:
+            return false;
+        }
+    case Geometry::Type::POLYLINE:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object0),
+                *static_cast<const Geometry::Polygon *>(object1), inside);
+        case Geometry::Type::RECTANGLE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object0),
+                *static_cast<const Geometry::Rectangle *>(object1), inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::AABBRect *>(object1),
+                *static_cast<const Geometry::Polyline *>(object0));
+        case Geometry::Type::SQUARE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object0),
+                *static_cast<const Geometry::Square *>(object1), inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object0),
+                *static_cast<const Geometry::Polyline *>(object1));
+        case Geometry::Type::BEZIER:
+            return Geometry::NoAABBTest::is_intersected(*static_cast<const Geometry::Polyline *>(object0),
+                static_cast<const Geometry::Bezier *>(object1)->shape());
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polyline *>(object0),
+                *static_cast<const Geometry::Circle *>(object1));
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polyline *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1), inside);
+        case Geometry::Type::LINE:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object1)->front(),
+                static_cast<const Geometry::Line *>(object1)->back(),
+                *static_cast<const Geometry::Polyline *>(object0), infinite);
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::Polyline *>(object0));
+        default:
+            return false;
+        }
+    case Geometry::Type::CIRCLE:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polygon *>(object1),
+                *static_cast<const Geometry::Circle *>(object0), inside);
+        case Geometry::Type::RECTANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Rectangle *>(object1),
+                *static_cast<const Geometry::Circle *>(object0), inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object1),
+                *static_cast<const Geometry::Circle *>(object0));
+        case Geometry::Type::SQUARE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Square *>(object1),
+                *static_cast<const Geometry::Circle *>(object0), inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polyline *>(object1),
+                *static_cast<const Geometry::Circle *>(object0));
+        case Geometry::Type::BEZIER:
+            return Geometry::is_intersected(static_cast<const Geometry::Bezier *>(object1)->shape(),
+                *static_cast<const Geometry::Circle *>(object0));
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Circle *>(object0),
+                *static_cast<const Geometry::Circle *>(object1), inside);
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Circle *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1));
+        case Geometry::Type::LINE:
+            return Geometry::distance(*static_cast<const Geometry::Circle *>(object0),
+                *static_cast<const Geometry::Line *>(object1), infinite) <= static_cast<const Geometry::Circle *>(object0)->radius;
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::Circle *>(object0), true);
+        default:
+            return false;
+        }
+    case Geometry::Type::TRIANGLE:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polygon *>(object1),
+                *static_cast<const Geometry::Triangle *>(object0), inside);
+        case Geometry::Type::RECTANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Rectangle *>(object1),
+                *static_cast<const Geometry::Triangle *>(object0), inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object1),
+                *static_cast<const Geometry::Triangle *>(object0), inside);
+        case Geometry::Type::SQUARE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Square *>(object1),
+                *static_cast<const Geometry::Triangle *>(object0), inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Polyline *>(object1),
+                *static_cast<const Geometry::Triangle *>(object0), inside);
+        case Geometry::Type::BEZIER:
+            return Geometry::is_intersected(static_cast<const Geometry::Bezier *>(object1)->shape(),
+                *static_cast<const Geometry::Triangle *>(object0), inside);
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Circle *>(object1),
+                *static_cast<const Geometry::Triangle *>(object0));
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Triangle *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1), inside);
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::Triangle *>(object0), true);
+        default:
+            return false;
+        }
+    case Geometry::Type::LINE:
+        switch (object1->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object0)->front(),
+                static_cast<const Geometry::Line *>(object0)->back(),
+                *static_cast<const Geometry::Polygon *>(object1), infinite, inside);
+        case Geometry::Type::RECTANGLE:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object0)->front(),
+                static_cast<const Geometry::Line *>(object0)->back(),
+                *static_cast<const Geometry::Rectangle *>(object1), infinite, inside);
+        case Geometry::Type::AABBRECT:
+            return Geometry::is_intersected(*static_cast<const Geometry::AABBRect *>(object1),
+                static_cast<const Geometry::Line *>(object0)->front(),
+                static_cast<const Geometry::Line *>(object0)->back());
+        case Geometry::Type::SQUARE:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object0)->front(),
+                static_cast<const Geometry::Line *>(object0)->back(),
+                *static_cast<const Geometry::Square *>(object1), infinite, inside);
+        case Geometry::Type::POLYLINE:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object0)->front(),
+                static_cast<const Geometry::Line *>(object0)->back(),
+                *static_cast<const Geometry::Polyline *>(object1), infinite);
+        case Geometry::Type::BEZIER:
+            return Geometry::is_intersected(static_cast<const Geometry::Line *>(object0)->front(),
+                static_cast<const Geometry::Line *>(object0)->back(),
+                static_cast<const Geometry::Bezier *>(object1)->shape(), infinite);
+        case Geometry::Type::CIRCLE:
+            return Geometry::distance(*static_cast<const Geometry::Circle *>(object1),
+                *static_cast<const Geometry::Line *>(object0), infinite) <= static_cast<const Geometry::Circle *>(object1)->radius;
+        case Geometry::Type::TRIANGLE:
+            return Geometry::is_intersected(*static_cast<const Geometry::Triangle *>(object0),
+                *static_cast<const Geometry::Triangle *>(object1), inside);
+        case Geometry::Type::LINE:
+            {
+                Geometry::Point point;
+                return Geometry::is_intersected(*static_cast<const Geometry::Line *>(object0),
+                    *static_cast<const Geometry::Line *>(object1), point, infinite);
+            }
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
+                *static_cast<const Geometry::Line *>(object0), infinite);
+        default:
+            return false;
+        }
+    default:
+        return false;
+    }
+}
+
+bool Geometry::NoAABBTest::is_intersected(const Geometry::AABBRect &rect, const Geometry::GeometryObject *object, const bool infinite, const bool inside)
+{
+    switch (object->type())
+    {
+    case Geometry::Type::POLYGON:
+        return Geometry::NoAABBTest::is_intersected(rect,
+            *static_cast<const Geometry::Polygon *>(object), inside);
+    case Geometry::Type::RECTANGLE:
+        return Geometry::NoAABBTest::is_intersected(rect,
+            *static_cast<const Geometry::Rectangle *>(object), inside);
+    case Geometry::Type::AABBRECT:
+        return Geometry::is_intersected(rect,
+            *static_cast<const Geometry::AABBRect *>(object), inside);
+    case Geometry::Type::SQUARE:
+        return Geometry::NoAABBTest::is_intersected(rect,
+            *static_cast<const Geometry::Square *>(object), inside);
+    case Geometry::Type::POLYLINE:
+        return Geometry::NoAABBTest::is_intersected(rect,
+            *static_cast<const Geometry::Polyline *>(object), inside);
+    case Geometry::Type::BEZIER:
+        return Geometry::NoAABBTest::is_intersected(rect,
+            static_cast<const Geometry::Bezier *>(object)->shape(), inside);
+    case Geometry::Type::CIRCLE:
+        return Geometry::is_intersected(rect,
+            *static_cast<const Geometry::Circle *>(object), inside);
+    case Geometry::Type::TRIANGLE:
+        return Geometry::is_intersected(rect,
+            *static_cast<const Geometry::Triangle *>(object), inside);
+    case Geometry::Type::LINE:
+        return Geometry::is_intersected(rect,
+            *static_cast<const Geometry::Line *>(object));
+    case Geometry::Type::POINT:
+        return Geometry::is_inside(*static_cast<const Geometry::Point *>(object), rect, true);
+    default:
+        return false;
+    }
+}
+
+bool Geometry::is_intersected(const Geometry::GeometryObject *object0, const Geometry::GeometryObject *object1, const bool infinite, const bool inside)
+{
+    if (!Geometry::is_intersected(object0->bounding_rect(), object1->bounding_rect()))
+    {
+        return false;
+    }
+
+    return Geometry::NoAABBTest::is_intersected(object0, object1, infinite, inside);
+}
+
+bool Geometry::is_intersected(const Geometry::AABBRect &rect, const Geometry::GeometryObject *object, const bool infinite, const bool inside)
+{
+    if (!Geometry::is_intersected(rect, object->bounding_rect()))
+    {
+        return false;
+    }
+
+    return Geometry::NoAABBTest::is_intersected(rect, object, infinite, inside);
 }
 
 

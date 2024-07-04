@@ -28,6 +28,7 @@ namespace ToyGameEngine
                 bool operator!=(const MarkedPoint &point) const;
             };
 
+            class GeometryObject;
             class Point;
             using Vector = Point;
             class Line;
@@ -120,9 +121,18 @@ namespace ToyGameEngine
 
             // 判断两线段是否相交并尝试获取交点,共线相交时仅在一个端点相交时获取交点
             bool is_intersected(const Point &point0, const Point &point1, const Point &point2, const Point &point3, Point &output, const bool infinite = false);
-            
+
             // 判断两线段是否相交并尝试获取交点,共线相交时仅在一个端点相交时获取交点
             bool is_intersected(const Line &line0, const Line &line1, Point &output, const bool infinite = true);
+
+            // 判断线段是否与矩形相交,infinite决定线段是否为无限长的直线,inside决定线段完全在矩形内是否算相交
+            bool is_intersected(const Point &start, const Point &end, const Rectangle &rect, const bool infinite = false, const bool inside = true);
+
+            // 判断线段是否与多段线相交,infinite决定线段是否为无限长的直线
+            bool is_intersected(const Point &start, const Point &end, const Polyline &polyline, const bool infinite = false);
+
+            // 判断线段是否与多边形相交,infinite决定线段是否为无限长的直线,inside决定线段完全在多边形内是否算相交
+            bool is_intersected(const Point &start, const Point &end, const Polygon &polygon, const bool infinite = false, const bool inside = true);
 
             // 判断两个AABB矩形是否相交,inside决定完全在AABB矩形内部是否算相交
             bool is_intersected(const AABBRect &rect0, const AABBRect &rect1, const bool inside = true);
@@ -136,6 +146,9 @@ namespace ToyGameEngine
             // 判断多段线是否与矩形相交,inside决定多段线完全在矩形内部是否算相交
             bool is_intersected(const Polyline &polyline, const Rectangle &rect, const bool inside = true);
 
+            // 判断多段线是否与三角形相交,inside决定多段线完全在三角形内部是否算相交
+            bool is_intersected(const Polyline &polyline, const Triangle &triangle, const bool inside = true);
+
             // 判断多段线是否与圆相交
             bool is_intersected(const Polyline &polyline, const Circle &circle);
 
@@ -145,11 +158,17 @@ namespace ToyGameEngine
             // 判断多边形与矩形是否相交,inside决定多边形完全在矩形内或矩形完全在多边形内部是否算相交
             bool is_intersected(const Polygon &polygon, const Rectangle &rect, const bool inside = true);
 
+            // 判断多边形与三角形是否相交,inside决定多边形完全在三角形内或三角形完全在多边形内部是否算相交
+            bool is_intersected(const Polygon &polygon, const Triangle &triangle, const bool inside = true);
+
             // 判断多边形与圆是否相交,inside决定多边形完全在圆内或圆完全在多边形内是否算相交
             bool is_intersected(const Polygon &polygon, const Circle &circle, const bool inside = true);
 
             // 判断两圆是否相交,inside决定完全在圆内是否算相交
             bool is_intersected(const Circle &circle0, const Circle &circle1, const bool inside = true);
+
+            // 判断圆和三角形是否相交
+            bool is_intersected(const Circle &circle, const Triangle &triangle);
 
             // 判断两矩形是否相交,inside决定完全在矩形内部是否算相交
             bool is_intersected(const Rectangle &rect0, const Rectangle &rect1, const bool inside = true);
@@ -157,11 +176,17 @@ namespace ToyGameEngine
             // 判断矩形与圆是否相交,inside决定圆完全在矩形内部或矩形完全在圆内部是否算相交
             bool is_intersected(const Rectangle &rect, const Circle &circle, const bool inside = true);
 
+            // 判断矩形与圆是否相交,inside决定三角形完全在矩形内部或矩形完全在三角形内部是否算相交
+            bool is_intersected(const Rectangle &rect, const Triangle &triangle, const bool inside = true);
+
             // 判断两正方形是否相交,inside决定完全在正方形内部是否算相交
             bool is_intersected(const Square &square0, const Square &square1, const bool inside = true);
 
             // 判断正方形与圆是否相交,inside决定圆完全在正方形内部或正方形完全在圆内部是否算相交
             bool is_intersected(const Square &square, const Circle &circle, const bool inside = true);
+
+            // 判断两三角形是否相交,inside决定在三角形内部是否算相交
+            bool is_intersected(const Triangle &triangle0, const Triangle &triangle1, const bool inside = true);
 
             // 判断AABB矩形是否与有限长线段相交,线段完全在AABB矩形内也算相交
             bool is_intersected(const AABBRect &rect, const Point &point0, const Point &point1);
@@ -184,6 +209,53 @@ namespace ToyGameEngine
             // 判断有限长线段是否与三角形相交,线段完全在三角形内不算相交
             bool is_intersected(const Line &line, const Triangle &triangle, Point &output0, Point &output1);
 
+            namespace NoAABBTest
+            {
+                // 判断两多段线是否相交
+                bool is_intersected(const Polyline &polyline0, const Polyline &polyline1);
+
+                // 判断多段线是否与多边形相交,inside决定多段线完全在多边形内部是否算相交
+                bool is_intersected(const Polyline &polyline, const Polygon &polygon, const bool inside = true);
+
+                // 判断多段线是否与矩形相交,inside决定多段线完全在矩形内部是否算相交
+                bool is_intersected(const Polyline &polyline, const Rectangle &rect, const bool inside = true);
+
+                // 判断两多边形是否相交,inside决定完全在多边形内部是否算相交
+                bool is_intersected(const Polygon &polygon0, const Polygon &polygon1, const bool inside = true);
+
+                // 判断多边形与矩形是否相交,inside决定多边形完全在矩形内或矩形完全在多边形内部是否算相交
+                bool is_intersected(const Polygon &polygon, const Rectangle &rect, const bool inside = true);
+
+                // 判断两矩形是否相交,inside决定完全在矩形内部是否算相交
+                bool is_intersected(const Rectangle &rect0, const Rectangle &rect1, const bool inside = true);
+
+                // 判断矩形与圆是否相交,inside决定圆完全在矩形内部或矩形完全在圆内部是否算相交
+                bool is_intersected(const Rectangle &rect, const Circle &circle, const bool inside = true);
+
+                // 判断两正方形是否相交,inside决定完全在正方形内部是否算相交
+                bool is_intersected(const Square &square0, const Square &square1, const bool inside = true);
+
+                // 判断正方形与圆是否相交,inside决定圆完全在正方形内部或正方形完全在圆内部是否算相交
+                bool is_intersected(const Square &square, const Circle &circle, const bool inside = true);
+
+                // 判断AABB矩形是否与多段线相交,多段线完全在AABB矩形内也算相交
+                bool is_intersected(const AABBRect &rect, const Polyline &polyline);
+
+                // 判断AABB矩形是否与多边形相交,多边形完全在AABB矩形内或AABB矩形完全在多边形内也算相交
+                bool is_intersected(const AABBRect &rect, const Polygon &polygon);
+
+                // 判断两Geometry Object是否相交
+                bool is_intersected(const GeometryObject *object0, const GeometryObject *object1, const bool infinite = false, const bool inside = true);
+
+                // 判断AABB矩形与Geometry Object是否相交
+                bool is_intersected(const AABBRect &rect, const GeometryObject *object, const bool infinite = false, const bool inside = true);
+            }
+
+            // 判断两Geometry Object是否相交
+            bool is_intersected(const GeometryObject *object0, const GeometryObject *object1, const bool infinite = false, const bool inside = true);
+
+            // 判断AABB矩形与Geometry Object是否相交
+            bool is_intersected(const AABBRect &rect, const GeometryObject *object, const bool infinite = false, const bool inside = true);
 
             // 判断点是否在直线的左侧
             bool is_on_left(const Point &point, const Point &start, const Point &end);
