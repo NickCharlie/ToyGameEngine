@@ -1,6 +1,5 @@
 #pragma once
 #include "Canvas_Impl.hpp"
-#include "GeometryGroup.hpp"
 
 #include <QWidget>
 #include <QPen>
@@ -33,12 +32,12 @@ namespace ToyGameEngine {
 
             void draw_triangle(QPainter& painter, Math::Geometry::Triangle& triangle);
 
-            GeometryGroup& get_group();
+            // GeometryGroup& get_group();
 
-            void push_to_group(Math::Geometry::GeometryObject* o);
+            // void push_to_group(Math::Geometry::GeometryObject* o);
 
         private:
-            GeometryGroup group;
+            // GeometryGroup group;
 
             void init();
 

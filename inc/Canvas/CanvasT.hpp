@@ -2,7 +2,6 @@
 #include <QPen>
 #include <QWidget>
 #include "Canvas_Impl.hpp"
-#include "GeometryGroup.hpp"
 
 namespace ToyGameEngine {
 
@@ -37,14 +36,14 @@ namespace ToyGameEngine {
 
 			void draw_graph() override;
 
-			GeometryGroup& get_group();
+			// GeometryGroup& get_group();
 
-			void push_to_group(Math::Geometry::GeometryObject* o);
+			// void push_to_group(Math::Geometry::GeometryObject* o);
 
 		private:
-            GeometryGroup group;
-
-            void init();
+			// GeometryGroup group;
+            
+			void init();
 
             void draw_cache();
 
@@ -66,13 +65,13 @@ namespace ToyGameEngine {
 
 		};
 
-		template<typename Shape>
-		void ICanvasT<Shape>::push_to_group(Math::Geometry::GeometryObject* o) {
-    		if (group.size() >= 70) {
-				return;
-			}
-			group.append(o);
-		}
+		// template<typename Shape>
+		// void ICanvasT<Shape>::push_to_group(Math::Geometry::GeometryObject* o) {
+    	// 	if (group.size() >= 70) {
+		// 		return;
+		// 	}
+		// 	group.append(o);
+		// }
 
 		template<typename Shape>
 		void ICanvasT<Shape>::paintEvent(QPaintEvent *event) {

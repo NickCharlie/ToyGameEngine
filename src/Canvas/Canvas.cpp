@@ -8,51 +8,51 @@ void ICanvas::paintEvent(QPaintEvent *event) {
     draw_graph();
 }
 
-void ICanvas::push_to_group(Math::Geometry::GeometryObject* o) {
-    if (group.size() >= 70) {
-        return;
-    }
-    group.append(o);
-}
+// void ICanvas::push_to_group(Math::Geometry::GeometryObject* o) {
+//     if (group.size() >= 70) {
+//         return;
+//     }
+//     group.append(o);
+// }
 
 void ICanvas::draw_graph() {
 
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing); // 可选：设置抗锯齿
+    // QPainter painter(this);
+    // painter.setRenderHint(QPainter::Antialiasing); // 可选：设置抗锯齿
 
-	QPen pen;
-	pen.setColor(QColor(Qt::blue));//设置笔颜色
-	pen.setWidth(4);//设置笔宽度
-	painter.setPen(pen);//设置为要绘制的笔
+	// QPen pen;
+	// pen.setColor(QColor(Qt::blue));//设置笔颜色
+	// pen.setWidth(4);//设置笔宽度
+	// painter.setPen(pen);//设置为要绘制的笔
 
-    const auto& group = get_group();
+    // // const auto& group = get_group();
 
-    // 遍历绘图元素，依次绘制
-    for (auto element : group) {
-        if (auto line = dynamic_cast<Math::Geometry::Line*>(element)) {
-            if (line == nullptr) {
-                continue;
-            }
-            draw_line(painter, *line);
-        } else if (auto rect = dynamic_cast<Math::Geometry::AABBRect*>(element)) {
-            if (rect == nullptr) {
-                continue;
-            }
-            draw_rect(painter, *rect);
-        } else if (auto point = dynamic_cast<Math::Geometry::Point*>(element)) {
-            if (point == nullptr) {
-                continue;
-            }
-            draw_point(painter, *point);
-        }
-        // TODO
-    }
+    // // 遍历绘图元素，依次绘制
+    // for (auto element : group) {
+    //     if (auto line = dynamic_cast<Math::Geometry::Line*>(element)) {
+    //         if (line == nullptr) {
+    //             continue;
+    //         }
+    //         draw_line(painter, *line);
+    //     } else if (auto rect = dynamic_cast<Math::Geometry::AABBRect*>(element)) {
+    //         if (rect == nullptr) {
+    //             continue;
+    //         }
+    //         draw_rect(painter, *rect);
+    //     } else if (auto point = dynamic_cast<Math::Geometry::Point*>(element)) {
+    //         if (point == nullptr) {
+    //             continue;
+    //         }
+    //         draw_point(painter, *point);
+    //     }
+    //     // TODO
+    // }
 
 }
 
-GeometryGroup& ICanvas::get_group() {
-    return group;
-}
+// GeometryGroup& ICanvas::get_group() {
+//     return group;
+// }
 
 void ICanvas::draw_line(QPainter& painter, Math::Geometry::Line& line) {
 
