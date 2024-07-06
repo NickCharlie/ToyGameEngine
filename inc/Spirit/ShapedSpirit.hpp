@@ -13,13 +13,25 @@ namespace ToyGameEngine
         class ShapedSpirit : public Spirit 
         {
         public:
+            ShapedSpirit(const Math::Geometry::Vector& position) : Spirit(position) {}
+            ShapedSpirit(const Math::Geometry::Vector& position, const Math::Geometry::Vector& velocity) : Spirit(position, velocity) {}
+            ShapedSpirit(const Math::Geometry::Vector& position, const double direction) : Spirit(position, direction) {}
+            ShapedSpirit(const Math::Geometry::Vector& position, const Math::Geometry::Vector& velocity, const double direction) : Spirit(position, velocity, direction) {}
             Math::Geometry::Type type() const override;
+
+            void replace(T& shape);
         private:
             T _shape;
         };
 
         template<typename T>
-        Math::Geometry::Type ShapedSpirit<T>::type() const override 
+        void ShapedSpirit<T>::replace(T& shape)
+        {
+            _shape = shape;
+        }
+
+        template<typename T>
+        Math::Geometry::Type ShapedSpirit<T>::type() const
         {
             if constexpr (std::is_same_v<T, Math::Geometry::Polygon>) 
             {
@@ -31,7 +43,11 @@ namespace ToyGameEngine
             }
             else if constexpr (std::is_same_v<T, Math::Geometry::AABBRect>)
             {
-                return Math::Geometry::Type::AABBRect;
+                return Math::Geometry::Type::AABBRECT;
+            }
+            else if constexpr (std::is_same_v<T, Math::Geometry::Circle>)
+            {
+                return Math::Geometry::Type::CIRCLE;
             }
             else
             {

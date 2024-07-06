@@ -35,6 +35,7 @@ qt_add_executable(ToyGameEngine
     ${CANVAS_SOURCES}
     ${MATH_SOURCES}
     ${SPIRIT_SOURCES}
+    ${SCENE_SOURCES}
 )
 
 target_link_libraries(ToyGameEngine PRIVATE Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL Qt6::Gui Qt6::Core)

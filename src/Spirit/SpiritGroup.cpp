@@ -9,7 +9,10 @@ SpiritGroup::SpiritGroup()
 }
 
 SpiritGroup::~SpiritGroup() {
-    this->clear();
+    for (size_t i = 0, count = _objects.size(); i < count; ++i)
+    {
+        delete _objects[i];
+    }
 }
 
 SpiritGroup::SpiritGroup(const SpiritGroup& group) 
@@ -186,11 +189,13 @@ void SpiritGroup::append(Spirits::Spirit* object)
 
 void SpiritGroup::append(SpiritGroup &group, const bool merge) 
 {
-    if (merge) {
+    if (merge) 
+    {
         _objects.insert(_objects.end(), group._objects.begin(), group._objects.end());
         group._objects.clear();
     }
-    else {
+    else 
+    {
         for (Spirits::Spirit* sp : group) {
             _objects.emplace_back(sp->clone());
         }
