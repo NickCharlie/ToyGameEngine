@@ -31,10 +31,27 @@ void Scene::update()
     for(size_t i = 0; i < _group.size(); ++i) 
     {
         // 这里不知道如何写 TODO
-        Spirits::ShapedSpirit<Geometry::GeometryObject>* sp = dynamic_cast<Spirits::ShapedSpirit<Geometry::GeometryObject>*>(_group[i]);
+        Spirits::Spirit* sp = _group[i];
         if (!sp) 
         {
-            std::cout << "nulllptr" << std::endl;
+            return;
         }
+
+        switch (sp->type())
+        {
+        case Geometry::Type::POLYGON:
+            // canvas.draw_polygon(painter, static_cast<ShapedSpirit<Geometry::Polygon> *>(sp)->shape());
+            break;
+        case Geometry::Type::CIRCLE:
+            // canvas.draw_circle(painter, static_cast<ShapedSpirit<Geometry::Circle> *>(sp)->shape());
+            break;
+        case Geometry::Type::AABBRECT:
+            // canvas.draw_rect(painter, static_cast<ShapedSpirit<Geometry::AABBRect> *>(sp)->shape());
+            break;
+        case Geometry::Type::TRIANGLE:
+            // canvas.draw_triangle(painter, static_cast<ShapedSpirit<Geometry::Triangle> *>(sp)->shape());
+            break;
+        }
+
     }
 }

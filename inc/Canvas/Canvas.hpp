@@ -1,6 +1,6 @@
 #pragma once
 #include "Canvas_Impl.hpp"
-
+#include "GeometryGroup.hpp"
 #include <QWidget>
 #include <QPen>
 
@@ -37,7 +37,7 @@ namespace ToyGameEngine {
             // void push_to_group(Math::Geometry::GeometryObject* o);
 
         private:
-            // GeometryGroup group;
+
 
             void init();
 

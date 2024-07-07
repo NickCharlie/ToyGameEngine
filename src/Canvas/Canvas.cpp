@@ -25,25 +25,41 @@ void ICanvas::draw_graph() {
 	// pen.setWidth(4);//设置笔宽度
 	// painter.setPen(pen);//设置为要绘制的笔
 
-    // // const auto& group = get_group();
+    // const auto& group = get_group();
 
     // // 遍历绘图元素，依次绘制
     // for (auto element : group) {
-    //     if (auto line = dynamic_cast<Math::Geometry::Line*>(element)) {
-    //         if (line == nullptr) {
+    //     if (auto line = dynamic_cast<Math::Geometry::Line*>(element)) 
+    //     {
+    //         if (line == nullptr) 
+    //         {
     //             continue;
     //         }
     //         draw_line(painter, *line);
-    //     } else if (auto rect = dynamic_cast<Math::Geometry::AABBRect*>(element)) {
-    //         if (rect == nullptr) {
+    //     } 
+    //     else if (auto rect = dynamic_cast<Math::Geometry::AABBRect*>(element)) 
+    //     {
+    //         if (rect == nullptr) 
+    //         {
     //             continue;
     //         }
     //         draw_rect(painter, *rect);
-    //     } else if (auto point = dynamic_cast<Math::Geometry::Point*>(element)) {
-    //         if (point == nullptr) {
+    //     } 
+    //     else if (auto point = dynamic_cast<Math::Geometry::Point*>(element)) 
+    //     {
+    //         if (point == nullptr) 
+    //         {
     //             continue;
     //         }
     //         draw_point(painter, *point);
+    //     } 
+    //     else if (auto circle = dynamic_cast<Math::Geometry::Circle*>(element))
+    //     {
+    //         if (circle == nullptr) 
+    //         {
+    //             continue;
+    //         }
+    //         draw_circle(painter, *circle);
     //     }
     //     // TODO
     // }
