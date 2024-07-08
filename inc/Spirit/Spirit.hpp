@@ -2,24 +2,23 @@
 
 #include <string>
 #include "Math/Geometry/Point.hpp"
-#include "Math/Geometry/Algorithm.hpp"
-#include "Math/Geometry/GeometryObject.hpp"
+
 
 namespace ToyGameEngine
 {
     namespace Spirits
     {
-        class Spirit : public Math::Geometry::GeometryObject
+        class Spirit : public Math::Geometry::Point
         {
         public:
             Spirit(const Math::Geometry::Vector &position);
             Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity);
             Spirit(const Math::Geometry::Vector &position, const double direction);
             Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity, const double direction);
-
-            Math::Geometry::Vector position() const;
-
-            void set_position(const Math::Geometry::Vector &position);
+            Spirit(const double x, const double y);
+            Spirit(const double x, const double y, const Math::Geometry::Vector &velocity);
+            Spirit(const double x, const double y, const double direction);
+            Spirit(const double x, const double y, const Math::Geometry::Vector &velocity, const double direction);
 
             Math::Geometry::Vector velocity() const;
             void set_velocity(const Math::Geometry::Vector &velocity);
@@ -37,10 +36,9 @@ namespace ToyGameEngine
 
             Spirits::Spirit *clone() const override;
 
-            virtual void update();
+            void update();
 
-        private:
-            Math::Geometry::Vector _position;
+        protected:
             Math::Geometry::Vector _velocity;
             double _direction;
 

@@ -1,36 +1,48 @@
 #include "Spirit/Spirit.hpp"
+#include "Math/Geometry/Algorithm.hpp"
 
 using namespace ToyGameEngine::Spirits;
 using namespace ToyGameEngine::Math;
 
-Spirit *Spirit::clone() const
-{
-    return new Spirits::Spirit(*this);
-}
 
 Spirit::Spirit(const Math::Geometry::Vector &position)
-    : _position(position)
+    : Geometry::Point(position)
 {
 }
 
 Spirit::Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity)
-    : _position(position), _velocity(velocity)
+    : Geometry::Point(position), _velocity(velocity)
 {
 }
 
 Spirit::Spirit(const Math::Geometry::Vector &position, const double direction)
-    : _position(position), _direction(Math::Geometry::degree_to_rad(direction))
+    : Geometry::Point(position), _direction(Math::Geometry::degree_to_rad(direction))
 {
 }
 
 Spirit::Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity, const double direction)
-    : _position(position), _velocity(velocity), _direction(Math::Geometry::degree_to_rad(direction))
+    : Geometry::Point(position), _velocity(velocity), _direction(Math::Geometry::degree_to_rad(direction))
 {
 }
 
-void Spirit::set_position(const Math::Geometry::Vector &position)
+Spirit::Spirit(const double x, const double y)
+    : Geometry::Point(x, y)
 {
-    this->_position = position;
+}
+
+Spirit::Spirit(const double x, const double y, const Math::Geometry::Vector &velocity)
+    : Geometry::Point(x, y), _velocity(velocity)
+{
+}
+
+Spirit::Spirit(const double x, const double y, const double direction)
+    : Geometry::Point(x, y), _direction(Math::Geometry::degree_to_rad(direction))
+{
+}
+
+Spirit::Spirit(const double x, const double y, const Math::Geometry::Vector &velocity, const double direction)
+    : Geometry::Point(x, y), _velocity(velocity), _direction(Math::Geometry::degree_to_rad(direction))
+{
 }
 
 void Spirit::set_velocity(const Math::Geometry::Vector &velocity)
@@ -48,10 +60,6 @@ void Spirit::set_rad_direction(double rad)
     this->_direction = rad;
 }
 
-Geometry::Vector Spirit::position() const
-{
-    return this->_position;
-}
 
 Geometry::Vector Spirit::velocity() const
 {
@@ -86,6 +94,11 @@ void Spirit::show()
 inline void Spirit::hide()
 {
     this->_visible = false;
+}
+
+Spirit *Spirit::clone() const
+{
+    return new Spirits::Spirit(*this);
 }
 
 void Spirit::update()

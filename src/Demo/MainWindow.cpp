@@ -20,15 +20,12 @@ void MainWindow::init()
     ui->canvas->load_scene(&_scene);
     _scene.groups().emplace_back();
 
-    ToyGameEngine::Spirits::SquareSpirit *square = new ToyGameEngine::Spirits::SquareSpirit(ToyGameEngine::Math::Geometry::Point(30, 30));
-    square->replace(ToyGameEngine::Math::Geometry::Square(30, 30, 20));
-    _scene.groups().back().append(square);
+    _scene.groups().back().append(new ToyGameEngine::Spirits::SquareSpirit(
+        ToyGameEngine::Math::Geometry::Point(30, 30), ToyGameEngine::Math::Geometry::Square(30, 30, 20)));
 
-    square = new ToyGameEngine::Spirits::SquareSpirit(ToyGameEngine::Math::Geometry::Point(100, 100));
-    square->replace(ToyGameEngine::Math::Geometry::Square(100, 100, 60));
-    _scene.groups().back().append(square);
+    _scene.groups().back().append(new ToyGameEngine::Spirits::SquareSpirit(
+        ToyGameEngine::Math::Geometry::Point(100, 100), ToyGameEngine::Math::Geometry::Square(100, 100, 60)));
 
-    square = new ToyGameEngine::Spirits::SquareSpirit(ToyGameEngine::Math::Geometry::Point(240, 240));
-    square->replace(ToyGameEngine::Math::Geometry::Square(240, 240, 150));
-    _scene.groups().back().append(square);
+    _scene.groups().back().append(new ToyGameEngine::Spirits::SquareSpirit(
+        ToyGameEngine::Math::Geometry::Point(240, 240), ToyGameEngine::Math::Geometry::Square(0, 0, 150)));
 }
