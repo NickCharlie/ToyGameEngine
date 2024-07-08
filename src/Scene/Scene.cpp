@@ -1,57 +1,76 @@
 #include "Scene/Scene.hpp"
-#include "Canvas/Canvas.hpp"
-#include "Canvas/CanvasT.hpp"
+#include "Math/Geometry/Algorithm.hpp"
 
 using namespace ToyGameEngine::Scenes;
 using namespace ToyGameEngine::Spirits;
-using namespace ToyGameEngine::Canvas;
 using namespace ToyGameEngine::Math;
 
 Scene::Scene()
 {
-
 }
 
-Scene::Scene(SpiritGroup& group)
+std::vector<SpiritGroup> &Scene::groups()
 {
-    for(size_t i = 0; i < group.size(); ++i) 
-    {
-        _group.append(group[i]->clone());
-    }
+    return _groups;
 }
 
-SpiritGroup& Scene::get_group()
+const std::vector<SpiritGroup> &Scene::groups() const
 {
-    return _group;
+    return _groups;
 }
 
 void Scene::update()
 {
-    ICanvas canvas;
-    for(size_t i = 0; i < _group.size(); ++i) 
+    for (SpiritGroup &group : _groups)
     {
-        // 这里不知道如何写 TODO
-        Spirits::Spirit* sp = _group[i];
-        if (!sp) 
-        {
-            return;
-        }
+        group.update();
+    }
+}
 
-        switch (sp->type())
+void Scene::set_viewport(double left, double top, double right, double bottom)
+{
+    if (left > right)
+    {
+        std::swap(left, right);
+    }
+    if (bottom > top)
+    {
+        std::swap(top, bottom);
+    }
+    _viewport.set_left(left);
+    _viewport.set_top(top);
+    _viewport.set_right(right);
+    _viewport.set_bottom(bottom);
+}
+
+bool Scene::is_visible(const Spirit *spirit) const
+{
+    if (spirit->visible())
+    {
+        switch (spirit->type())
         {
-        case Geometry::Type::POLYGON:
-            // canvas.draw_polygon(painter, static_cast<ShapedSpirit<Geometry::Polygon> *>(sp)->shape());
-            break;
-        case Geometry::Type::CIRCLE:
-            // canvas.draw_circle(painter, static_cast<ShapedSpirit<Geometry::Circle> *>(sp)->shape());
-            break;
+        case Geometry::Type::RECTANGLE:
+            return Geometry::is_intersected(_viewport, static_cast<const ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape());
+        case Geometry::Type::SQUARE:
+            return Geometry::is_intersected(_viewport, static_cast<const ShapedSpirit<Geometry::Square> *>(spirit)->shape());
         case Geometry::Type::AABBRECT:
-            // canvas.draw_rect(painter, static_cast<ShapedSpirit<Geometry::AABBRect> *>(sp)->shape());
-            break;
-        case Geometry::Type::TRIANGLE:
-            // canvas.draw_triangle(painter, static_cast<ShapedSpirit<Geometry::Triangle> *>(sp)->shape());
-            break;
+            return Geometry::is_intersected(_viewport, static_cast<const ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape());
+        case Geometry::Type::CIRCLE:
+            return Geometry::is_intersected(_viewport, static_cast<const ShapedSpirit<Geometry::Circle> *>(spirit)->shape());
+        case Geometry::Type::POLYGON:
+            return Geometry::is_intersected(_viewport, static_cast<const ShapedSpirit<Geometry::Polygon> *>(spirit)->shape());
+        case Geometry::Type::POLYLINE:
+            return Geometry::is_intersected(_viewport, static_cast<const ShapedSpirit<Geometry::Polyline> *>(spirit)->shape());
+        case Geometry::Type::BEZIER:
+            return Geometry::is_intersected(_viewport, static_cast<const ShapedSpirit<Geometry::Bezier> *>(spirit)->shape().shape());
+        case Geometry::Type::POINT:
+            return Geometry::is_inside(static_cast<const ShapedSpirit<Geometry::Point> *>(spirit)->shape(), _viewport, true);
+        default:
+            return false;
         }
-
+    }
+    else
+    {
+        return false;
     }
 }

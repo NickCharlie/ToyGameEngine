@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QString>
+#include "Scene/Scene.hpp"
 
 
 
@@ -16,8 +17,12 @@ class MainWindow : public QMainWindow
 
 private:
     Ui::MainWindow *ui = nullptr;
+    ToyGameEngine::Scenes::Scene _scene;
 
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+private:
+    void init();
 };

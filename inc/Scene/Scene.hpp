@@ -1,5 +1,7 @@
 #pragma once
 #include "Spirit/SpiritGroup.hpp"
+#include "Math/Geometry/AABBRect.hpp"
+
 
 namespace ToyGameEngine 
 {
@@ -9,13 +11,21 @@ namespace ToyGameEngine
         {
         public:
             Scene();
-            Scene(Spirits::SpiritGroup& group);
 
             void update();
 
-            Spirits::SpiritGroup& get_group();
+            std::vector<Spirits::SpiritGroup> &groups();
+
+            const std::vector<Spirits::SpiritGroup> &groups() const;
+
+            void set_viewport(double left, double top, double right, double bottom);
+
+            bool is_visible(const Spirits::Spirit *spirit) const;
+
         private:
-            Spirits::SpiritGroup _group;
+            std::vector<Spirits::SpiritGroup> _groups;
+
+            Math::Geometry::AABBRect _viewport;
         };
     }
 }

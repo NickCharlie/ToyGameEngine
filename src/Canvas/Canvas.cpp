@@ -1,175 +1,165 @@
 #include "Canvas/Canvas.hpp"
+#include "Math/Geometry/AllGeometryObjects.hpp"
 
 using namespace ToyGameEngine::Canvas;
+using namespace ToyGameEngine::Math;
+using namespace ToyGameEngine::Spirits;
 
-void ICanvas::paintEvent(QPaintEvent *event) {
+void ICanvas::paintEvent(QPaintEvent *event)
+{
     Q_UNUSED(event);
 
-    draw_graph();
+    draw_scene();
 }
 
-// void ICanvas::push_to_group(Math::Geometry::GeometryObject* o) {
-//     if (group.size() >= 70) {
-//         return;
-//     }
-//     group.append(o);
-// }
+void ICanvas::draw_scene()
+{
+    if (_scene == nullptr)
+    {
+        return;
+    }
 
-void ICanvas::draw_graph() {
+    QPainter painter(this);
+    painter.setWindow(0, this->height(), this->width(), -(this->height()));
 
-    // QPainter painter(this);
-    // painter.setRenderHint(QPainter::Antialiasing); // 可选：设置抗锯齿
+    QPen pen;
+    pen.setColor(QColor(Qt::green)); //设置笔颜色
+    pen.setWidth(2); //设置笔宽度
+    painter.setPen(pen); //设置为要绘制的笔
 
-	// QPen pen;
-	// pen.setColor(QColor(Qt::blue));//设置笔颜色
-	// pen.setWidth(4);//设置笔宽度
-	// painter.setPen(pen);//设置为要绘制的笔
+    for (const Spirits::SpiritGroup &group : _scene->groups())
+    {
+        for (const Spirits::Spirit *spirit : group)
+        {
+            if (!_scene->is_visible(spirit))
+            {
+                continue;
+            }
 
-    // const auto& group = get_group();
-
-    // // 遍历绘图元素，依次绘制
-    // for (auto element : group) {
-    //     if (auto line = dynamic_cast<Math::Geometry::Line*>(element)) 
-    //     {
-    //         if (line == nullptr) 
-    //         {
-    //             continue;
-    //         }
-    //         draw_line(painter, *line);
-    //     } 
-    //     else if (auto rect = dynamic_cast<Math::Geometry::AABBRect*>(element)) 
-    //     {
-    //         if (rect == nullptr) 
-    //         {
-    //             continue;
-    //         }
-    //         draw_rect(painter, *rect);
-    //     } 
-    //     else if (auto point = dynamic_cast<Math::Geometry::Point*>(element)) 
-    //     {
-    //         if (point == nullptr) 
-    //         {
-    //             continue;
-    //         }
-    //         draw_point(painter, *point);
-    //     } 
-    //     else if (auto circle = dynamic_cast<Math::Geometry::Circle*>(element))
-    //     {
-    //         if (circle == nullptr) 
-    //         {
-    //             continue;
-    //         }
-    //         draw_circle(painter, *circle);
-    //     }
-    //     // TODO
-    // }
-
+            switch (spirit->type())
+            {
+            case Geometry::Type::RECTANGLE:
+                draw_rectangle(painter, static_cast<const ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape());
+                break;
+            case Geometry::Type::SQUARE:
+                draw_rectangle(painter, static_cast<const ShapedSpirit<Geometry::Square> *>(spirit)->shape());
+                break;
+            case Geometry::Type::AABBRECT:
+                draw_rectangle(painter, static_cast<const ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape());
+                break;
+            case Geometry::Type::CIRCLE:
+                draw_circle(painter, static_cast<const ShapedSpirit<Geometry::Circle> *>(spirit)->shape());
+                break;
+            case Geometry::Type::POLYGON:
+                draw_polygon(painter, static_cast<const ShapedSpirit<Geometry::Polygon> *>(spirit)->shape());
+                break;
+            case Geometry::Type::POLYLINE:
+                draw_polyline(painter, static_cast<const ShapedSpirit<Geometry::Polyline> *>(spirit)->shape());
+                break;
+            case Geometry::Type::BEZIER:
+                draw_bezier(painter, static_cast<const ShapedSpirit<Geometry::Bezier> *>(spirit)->shape());
+                break;
+            case Geometry::Type::POINT:
+                draw_point(painter, static_cast<const ShapedSpirit<Geometry::Point> *>(spirit)->shape());
+                break;
+            default:
+                break;
+            }
+        }
+    }
 }
 
-// GeometryGroup& ICanvas::get_group() {
-//     return group;
-// }
-
-void ICanvas::draw_line(QPainter& painter, Math::Geometry::Line& line) {
-
-    painter.drawLine(QLineF(QPointF(line.front().x, line.front().y), QPointF(line.back().x, line.back().y)));
+void ICanvas::draw_line(QPainter &painter, const Math::Geometry::Line &line)
+{
+    painter.drawLine(QPointF(line.front().x, line.front().y), QPointF(line.back().x, line.back().y));
 }
 
-void ICanvas::draw_rect(QPainter& painter, Math::Geometry::AABBRect& rect) {
-
+void ICanvas::draw_rectangle(QPainter &painter, const Math::Geometry::AABBRect &rect)
+{
     painter.drawRect(QRectF(rect.left(), rect.top(), rect.right(), rect.bottom()));
 }
 
-void ICanvas::draw_point(QPainter& painter, Math::Geometry::Point& point) {
-
-    painter.drawPoint(QPointF(point.x, point.y));
+void ICanvas::draw_point(QPainter &painter, const Math::Geometry::Point &point)
+{
+    painter.drawPoint(point.x, point.y);
 }
 
-void ICanvas::draw_bezier(QPainter& painter, Math::Geometry::Bezier& bezier) {
-
-    const auto& shape = bezier.shape();
-
-    for (size_t i = 0; i < shape.size() - 1; ++i) {
-        const auto& pos1 = shape[i];
-        const auto& pos2 = shape[i + 1];
-
-        painter.drawLine(QPointF(pos1.x, pos1.y), QPointF(pos2.x, pos2.y));
+void ICanvas::draw_bezier(QPainter &painter, const Math::Geometry::Bezier &bezier)
+{
+    _qpoints.clear();
+    for (const Geometry::Point &point : bezier.shape())
+    {
+        _qpoints.append(QPointF(point.x, point.y));
     }
+    painter.drawPolyline(_qpoints);
 }
 
-void ICanvas::draw_circle(QPainter& painter, Math::Geometry::Circle& circle) {
-
-    double centerX = circle.x;
-    double centerY = circle.y;
-    double radius = circle.radius;
-
-    painter.drawEllipse(QPointF(centerX, centerY), radius, radius);
+void ICanvas::draw_circle(QPainter &painter, const Math::Geometry::Circle &circle)
+{
+    painter.drawEllipse(QPointF(circle.x, circle.y), circle.radius, circle.radius);
 }
 
-void ICanvas::draw_polygon(QPainter& painter, Math::Geometry::Polygon& polygon) {
-
-    const auto begin = polygon.begin();
-    const auto end = polygon.end();
-
-    if (std::distance(begin, end) < 2) {
-        return;
+void ICanvas::draw_polygon(QPainter &painter, const Math::Geometry::Polygon &polygon)
+{
+    _qpoints.clear();
+    for (const Geometry::Point &point : polygon)
+    {
+        _qpoints.append(QPointF(point.x, point.y));
     }
-
-    QVector<QPointF> qpoints;
-    for (auto it = begin; it != end; ++it) {
-        qpoints.append(QPointF(it->x, it->y));
-    }
-
-    painter.drawPolygon(qpoints.data(), qpoints.size());
+    painter.drawPolygon(_qpoints);
 }
 
-void ICanvas::draw_polyline(QPainter& painter, Math::Geometry::Polyline& polyline) {
-
-    const auto begin = polyline.begin();
-    const auto end = polyline.end();
-
-    if (std::distance(begin, end) < 2) {
-        return;
+void ICanvas::draw_polyline(QPainter &painter, const Math::Geometry::Polyline &polyline)
+{
+    _qpoints.clear();
+    for (const Geometry::Point &point : polyline)
+    {
+        _qpoints.append(QPointF(point.x, point.y));
     }
-
-    QVector<QPointF> qpoints;
-    for (auto it = begin; it != end; ++it) {
-        qpoints.append(QPointF(it->x, it->y));
-    }
-
-    painter.drawPolyline(qpoints.data(), qpoints.size());
+    painter.drawPolyline(_qpoints);
 }
 
-void ICanvas::draw_triangle(QPainter& painter, Math::Geometry::Triangle& triangle) {
+void ICanvas::draw_rectangle(QPainter &painter, const Math::Geometry::Rectangle &rectangle)
+{
+    _qpoints.clear();
+    for (size_t i = 0; i < 4; ++i)
+    {
+        _qpoints.append(QPointF(rectangle[i].x, rectangle[i].y));
+    }
+    painter.drawPolygon(_qpoints);
+}
+
+void ICanvas::draw_triangle(QPainter &painter, const Math::Geometry::Triangle &triangle)
+{
     QPointF points[3] = {
         QPointF(triangle[0].x, triangle[0].y),
         QPointF(triangle[1].x, triangle[1].y),
-        QPointF(triangle[2].x, triangle[2].y)
-    };
-
+        QPointF(triangle[2].x, triangle[2].y)};
     painter.drawPolygon(points, 3);
 }
 
-void ICanvas::mousePressEvent(QMouseEvent *event) {
-
+void ICanvas::mousePressEvent(QMouseEvent *event)
+{
 }
 
-void ICanvas::mouseReleaseEvent(QMouseEvent *event) {
-
+void ICanvas::mouseReleaseEvent(QMouseEvent *event)
+{
 }
 
-void ICanvas::mouseMoveEvent(QMouseEvent *event) {
-
+void ICanvas::mouseMoveEvent(QMouseEvent *event)
+{
 }
 
-void ICanvas::wheelEvent(QWheelEvent *event) {
-
+void ICanvas::wheelEvent(QWheelEvent *event)
+{
 }
 
-void ICanvas::mouseDoubleClickEvent(QMouseEvent *event) {
-
+void ICanvas::mouseDoubleClickEvent(QMouseEvent *event)
+{
 }
 
-void ICanvas::resizeEvent(QResizeEvent *event) {
-    
+void ICanvas::resizeEvent(QResizeEvent *event)
+{
+    _scene->set_viewport(0, this->height(), this->width(), 0);
+    return QWidget::resizeEvent(event);
 }

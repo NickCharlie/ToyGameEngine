@@ -3,42 +3,37 @@
 using namespace ToyGameEngine::Spirits;
 using namespace ToyGameEngine::Math;
 
-
-Spirit* Spirit::clone() const
+Spirit *Spirit::clone() const
 {
     return new Spirits::Spirit(*this);
 }
 
-Spirit::Spirit(const Math::Geometry::Vector& position)
+Spirit::Spirit(const Math::Geometry::Vector &position)
+    : _position(position)
 {
-    set_position(position);
 }
 
-Spirit::Spirit(const Math::Geometry::Vector& position, const Math::Geometry::Vector& velocity)
+Spirit::Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity)
+    : _position(position), _velocity(velocity)
 {
-    set_position(position);
-    set_velocity(velocity);
 }
 
-Spirit::Spirit(const Math::Geometry::Vector& position, const double direction)
+Spirit::Spirit(const Math::Geometry::Vector &position, const double direction)
+    : _position(position), _direction(Math::Geometry::degree_to_rad(direction))
 {
-    set_position(position);
-    set_degree_direction(direction);
 }
 
-Spirit::Spirit(const Math::Geometry::Vector& position, const Math::Geometry::Vector& velocity, const double direction)
+Spirit::Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity, const double direction)
+    : _position(position), _velocity(velocity), _direction(Math::Geometry::degree_to_rad(direction))
 {
-    set_position(position);
-    set_velocity(velocity);
-    set_degree_direction(direction);
 }
 
-void Spirit::set_position(const Math::Geometry::Vector& position)
+void Spirit::set_position(const Math::Geometry::Vector &position)
 {
     this->_position = position;
 }
 
-void Spirit::set_velocity(const Math::Geometry::Vector& velocity)
+void Spirit::set_velocity(const Math::Geometry::Vector &velocity)
 {
     this->_velocity = velocity;
 }
@@ -91,4 +86,8 @@ void Spirit::show()
 inline void Spirit::hide()
 {
     this->_visible = false;
+}
+
+void Spirit::update()
+{
 }

@@ -1,28 +1,28 @@
 #pragma once
 
+#include <string>
 #include "Math/Geometry/Point.hpp"
 #include "Math/Geometry/Algorithm.hpp"
 #include "Math/Geometry/GeometryObject.hpp"
-#include <string>
 
-namespace ToyGameEngine 
+namespace ToyGameEngine
 {
-    namespace Spirits 
+    namespace Spirits
     {
-        class Spirit : public Math::Geometry::GeometryObject 
+        class Spirit : public Math::Geometry::GeometryObject
         {
         public:
-            Spirit(const Math::Geometry::Vector& position);
-            Spirit(const Math::Geometry::Vector& position, const Math::Geometry::Vector& velocity);
-            Spirit(const Math::Geometry::Vector& position, const double direction);
-            Spirit(const Math::Geometry::Vector& position, const Math::Geometry::Vector& velocity, const double direction);
+            Spirit(const Math::Geometry::Vector &position);
+            Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity);
+            Spirit(const Math::Geometry::Vector &position, const double direction);
+            Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity, const double direction);
 
             Math::Geometry::Vector position() const;
-            
-            void set_position(const Math::Geometry::Vector& position);
+
+            void set_position(const Math::Geometry::Vector &position);
 
             Math::Geometry::Vector velocity() const;
-            void set_velocity(const Math::Geometry::Vector& velocity);
+            void set_velocity(const Math::Geometry::Vector &velocity);
 
             double direction() const;
             void set_degree_direction(double degree);
@@ -35,7 +35,10 @@ namespace ToyGameEngine
             void show();
             void hide();
 
-            Spirits::Spirit* clone() const override;
+            Spirits::Spirit *clone() const override;
+
+            virtual void update();
+
         private:
             Math::Geometry::Vector _position;
             Math::Geometry::Vector _velocity;
@@ -44,7 +47,6 @@ namespace ToyGameEngine
             std::string _name;
             bool _visible = true;
         };
-        
 
     }
 }
