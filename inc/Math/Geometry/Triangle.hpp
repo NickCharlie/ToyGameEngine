@@ -72,6 +72,8 @@ namespace ToyGameEngine
 
                 Polygon mini_bounding_rect() const override;
 
+                Point average_point() const override;
+
                 // 内接圆圆心
                 Point inner_circle_center() const;
 

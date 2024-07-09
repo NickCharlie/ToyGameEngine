@@ -46,6 +46,8 @@ namespace ToyGameEngine
 
                 Polygon mini_bounding_rect() const override;
 
+                Point average_point() const override;
+
                 Circle operator+(const Point &point) const;
 
                 Circle operator-(const Point &point) const;

@@ -151,6 +151,11 @@ Geometry::Polygon Geometry::Line::mini_bounding_rect() const
     }
 }
 
+Geometry::Point Geometry::Line::average_point() const
+{
+    return (_start_point + _end_point) / 2;
+}
+
 Geometry::Point &Geometry::Line::front()
 {
     return _start_point;

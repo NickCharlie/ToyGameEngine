@@ -511,3 +511,16 @@ Geometry::Polygon Geometry::Polyline::mini_bounding_rect() const
     }
     return rect;
 }
+
+Geometry::Point Geometry::Polyline::average_point() const
+{
+    Geometry::Point point;
+    for (const Geometry::Point &p : _points)
+    {
+        point.x += p.x;
+        point.y += p.y;
+    }
+    point.x /= _points.size();
+    point.y /= _points.size();
+    return point;
+}

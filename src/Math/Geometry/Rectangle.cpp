@@ -158,6 +158,11 @@ Geometry::Polygon Geometry::Rectangle::mini_bounding_rect() const
     return Geometry::Polygon({_points[0], _points[1], _points[2], _points[3], _points[0]});
 }
 
+Geometry::Point Geometry::Rectangle::average_point() const
+{
+    return (_points[0] + _points[2]) / 2;
+}
+
 std::array<Geometry::Point, 4>::const_iterator Geometry::Rectangle::begin() const
 {
     return _points.begin();

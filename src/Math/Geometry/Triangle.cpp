@@ -271,6 +271,11 @@ Geometry::Polygon Geometry::Triangle::mini_bounding_rect() const
     return rect;
 }
 
+Geometry::Point Geometry::Triangle::average_point() const
+{
+    return (_vecs[0] + _vecs[1] + _vecs[2]) / 3;
+}
+
 Geometry::Point Geometry::Triangle::inner_circle_center() const
 {
     const double a = Geometry::distance(_vecs[1], _vecs[2]);

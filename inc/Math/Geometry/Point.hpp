@@ -65,6 +65,8 @@ namespace ToyGameEngine
 
                 Polygon mini_bounding_rect() const override;
 
+                Point average_point() const override;
+
                 Point operator*(const double k) const;
 
                 // 向量点积

@@ -763,11 +763,13 @@ bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Circle &c
     }
     if (coincide)
     {
-        return Geometry::distance(point, circle) <= circle.radius;
+        return (point.x - circle.x) * (point.x - circle.x) * (point.y - circle.y) * (point.y - circle.y)
+            <= circle.radius * circle.radius;
     }
     else
     {
-        return Geometry::distance(point, circle) < circle.radius;
+        return (point.x - circle.x) * (point.x - circle.x) * (point.y - circle.y) * (point.y - circle.y)
+            < circle.radius * circle.radius;
     }
 }
 

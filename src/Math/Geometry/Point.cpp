@@ -160,6 +160,11 @@ Geometry::Polygon Geometry::Point::mini_bounding_rect() const
     }
 }
 
+Geometry::Point Geometry::Point::average_point() const
+{
+    return *this;
+}
+
 Geometry::Point Geometry::Point::operator*(const double k) const
 {
     return Geometry::Point(x * k, y * k);

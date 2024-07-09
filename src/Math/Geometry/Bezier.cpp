@@ -184,3 +184,8 @@ Geometry::Polygon Geometry::Bezier::mini_bounding_rect() const
 {
     return _shape.mini_bounding_rect();
 }
+
+Geometry::Point Geometry::Bezier::average_point() const
+{
+    return _shape.average_point();
+}

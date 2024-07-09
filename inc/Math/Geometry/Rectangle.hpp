@@ -63,6 +63,8 @@ namespace ToyGameEngine
 
                 Polygon mini_bounding_rect() const override;
 
+                Point average_point() const override;
+
                 std::array<Point, 4>::const_iterator begin() const;
 
                 std::array<Point, 4>::const_iterator cbegin() const;

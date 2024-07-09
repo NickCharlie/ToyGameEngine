@@ -78,6 +78,8 @@ namespace ToyGameEngine
                 size_t index(const double x, const double y) const;
 
                 size_t index(const Point &point) const;
+
+                Point average_point() const override;
             };
         }
     }

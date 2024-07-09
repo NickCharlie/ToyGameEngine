@@ -9,6 +9,8 @@ namespace ToyGameEngine
         {
             enum Type {GEOMETRY_OBJECT, POINT, POLYLINE, AABBRECT, POLYGON, TRIANGLE, SQUARE, RECTANGLE, CIRCLE, LINE, BEZIER};
 
+            class Point;
+
             class AABBRect;
 
             class Polygon;
@@ -52,6 +54,9 @@ namespace ToyGameEngine
 
                 // 最小外接矩形
                 virtual Polygon mini_bounding_rect() const;
+
+                // 平均点
+                virtual Point average_point() const;
             };
         }
     }

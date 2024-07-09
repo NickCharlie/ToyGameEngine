@@ -57,6 +57,8 @@ namespace ToyGameEngine
 
                 Polygon mini_bounding_rect() const override;
 
+                Point average_point() const override;
+
                 Point &front();
 
                 const Point &front() const;

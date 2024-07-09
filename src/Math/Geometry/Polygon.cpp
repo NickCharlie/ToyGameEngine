@@ -399,3 +399,15 @@ size_t Geometry::Polygon::index(const Geometry::Point &point) const
     }
     return SIZE_MAX;
 }
+
+Geometry::Point Geometry::Polygon::average_point() const
+{
+    Geometry::Point point;
+    for (size_t i = 0, count = _points.size() - 1; i < count; ++i)
+    {
+        point += _points[i];
+    }
+    point.x /= (_points.size() - 1);
+    point.y /= (_points.size() - 1);
+    return point;
+}

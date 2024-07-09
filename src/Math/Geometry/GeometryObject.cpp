@@ -92,3 +92,8 @@ Geometry::Polygon Geometry::GeometryObject::mini_bounding_rect() const
 {
     return Geometry::Polygon();
 }
+
+Geometry::Point Geometry::GeometryObject::average_point() const
+{
+    return Geometry::Point();
+}

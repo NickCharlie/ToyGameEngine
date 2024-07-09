@@ -125,6 +125,8 @@ namespace ToyGameEngine
                 AABBRect bounding_rect() const override;
 
                 Polygon mini_bounding_rect() const override;
+
+                Point average_point() const override;
             };
         }
     }

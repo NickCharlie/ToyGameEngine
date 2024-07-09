@@ -114,6 +114,11 @@ Geometry::Polygon Geometry::Circle::mini_bounding_rect() const
     }
 }
 
+Geometry::Point Geometry::Circle::average_point() const
+{
+    return *this;
+}
+
 Geometry::Circle Geometry::Circle::operator+(const Geometry::Point &point) const
 {
     return Geometry::Circle(x + point.x, y + point.y, radius);
