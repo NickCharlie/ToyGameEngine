@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Player.hpp"
+#include "Spirit/Spirit.hpp"
 #include <vector>
 
 namespace ToyGameEngine
@@ -11,6 +11,11 @@ namespace ToyGameEngine
 
         class SpiritGroup
         {
+        public:
+            bool key_event_update = false;
+            bool mouse_event_update = false;
+            bool ignore_all_events = false;
+
         private:
             std::vector<Spirits::Spirit *> _objects;
             bool _visible = true;
@@ -104,6 +109,12 @@ namespace ToyGameEngine
             void remove_front();
 
             void remove_back();
+
+            void update(Scenes::Event *event);
+
+            void update(Scenes::KeyEvent *event);
+
+            void update(Scenes::MouseEvent *event);
         };
 
     }

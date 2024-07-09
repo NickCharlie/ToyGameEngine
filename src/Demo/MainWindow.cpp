@@ -1,6 +1,6 @@
 #include "Demo/MainWindow.hpp"
 #include "./ui_MainWindow.h"
-#include "Spirit/Spirit.hpp"
+#include "Demo/Player.hpp"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    _scene.stop();
     delete ui;
 }
 
@@ -19,6 +20,7 @@ void MainWindow::init()
 {
     ui->canvas->load_scene(&_scene);
     _scene.groups().emplace_back();
+    _scene.groups().back().key_event_update = true;
 
     _scene.groups().back().append(new ToyGameEngine::Spirits::SquareSpirit(
         ToyGameEngine::Math::Geometry::Point(30, 30), ToyGameEngine::Math::Geometry::Square(30, 30, 20)));
@@ -28,4 +30,9 @@ void MainWindow::init()
 
     _scene.groups().back().append(new ToyGameEngine::Spirits::SquareSpirit(
         ToyGameEngine::Math::Geometry::Point(240, 240), ToyGameEngine::Math::Geometry::Square(0, 0, 150)));
+
+    _scene.groups().back().append(new ToyGameEngine::Spirits::Player<ToyGameEngine::Math::Geometry::Circle>(
+        ToyGameEngine::Math::Geometry::Point(400, 300), ToyGameEngine::Math::Geometry::Circle(400, 300, 20)));
+
+    _scene.start();
 }

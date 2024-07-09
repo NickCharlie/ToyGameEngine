@@ -1,6 +1,7 @@
 #pragma once
 #include <QWidget>
 #include <QPen>
+#include <QKeyEvent>
 #include "Canvas_Impl.hpp"
 #include "GeometryGroup.hpp"
 
@@ -21,23 +22,25 @@ namespace ToyGameEngine
             // 绘图事件
             void paintEvent(QPaintEvent *event) override;
 
-            void draw_line(QPainter &painter, const Math::Geometry::Line &line);
+            void draw_line(QPainter &painter, const Math::Geometry::Line &line) override;
 
-            void draw_rectangle(QPainter &painter, const Math::Geometry::AABBRect &rect);
+            void draw_rectangle(QPainter &painter, const Math::Geometry::AABBRect &rect) override;
 
-            void draw_point(QPainter &painter, const Math::Geometry::Point &point);
+            void draw_point(QPainter &painter, const Math::Geometry::Point &point) override;
 
-            void draw_bezier(QPainter &painter, const Math::Geometry::Bezier &bezier);
+            void draw_bezier(QPainter &painter, const Math::Geometry::Bezier &bezier) override;
 
-            void draw_circle(QPainter &painter, const Math::Geometry::Circle &circle);
+            void draw_circle(QPainter &painter, const Math::Geometry::Circle &circle) override;
 
-            void draw_polygon(QPainter &painter, const Math::Geometry::Polygon &polygon);
+            void draw_polygon(QPainter &painter, const Math::Geometry::Polygon &polygon) override;
 
-            void draw_polyline(QPainter &painter, const Math::Geometry::Polyline &polyline);
+            void draw_polyline(QPainter &painter, const Math::Geometry::Polyline &polyline) override;
 
-            void draw_rectangle(QPainter &painter, const Math::Geometry::Rectangle &rectangle);
+            void draw_rectangle(QPainter &painter, const Math::Geometry::Rectangle &rectangle) override;
 
-            void draw_triangle(QPainter &painter, const Math::Geometry::Triangle &triangle);
+            void draw_triangle(QPainter &painter, const Math::Geometry::Triangle &triangle) override;
+
+            void update() override;
 
         private:
             void init();
@@ -56,6 +59,8 @@ namespace ToyGameEngine
             void mouseDoubleClickEvent(QMouseEvent *event);
 
             void resizeEvent(QResizeEvent *event);
+
+            void keyPressEvent(QKeyEvent *event);
         };
     }
 }

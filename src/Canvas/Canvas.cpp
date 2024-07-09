@@ -1,5 +1,5 @@
 #include "Canvas/Canvas.hpp"
-#include "Math/Geometry/AllGeometryObjects.hpp"
+#include "Spirit/ShapedSpirit.hpp"
 
 using namespace ToyGameEngine::Canvas;
 using namespace ToyGameEngine::Math;
@@ -138,6 +138,11 @@ void ICanvas::draw_triangle(QPainter &painter, const Math::Geometry::Triangle &t
     painter.drawPolygon(points, 3);
 }
 
+void ICanvas::update()
+{
+    return QWidget::update();
+}
+
 void ICanvas::mousePressEvent(QMouseEvent *event)
 {
 }
@@ -162,4 +167,13 @@ void ICanvas::resizeEvent(QResizeEvent *event)
 {
     _scene->set_viewport(0, this->height(), this->width(), 0);
     return QWidget::resizeEvent(event);
+}
+
+void ICanvas::keyPressEvent(QKeyEvent *event)
+{
+    Scenes::KeyEvent *key_event = new Scenes::KeyEvent(static_cast<Scenes::Key>(event->key()));
+    key_event->is_auto_repeat = event->isAutoRepeat();
+    _scene->append_event(key_event);
+
+    return QWidget::keyPressEvent(event);
 }

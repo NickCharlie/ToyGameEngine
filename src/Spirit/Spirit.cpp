@@ -104,3 +104,15 @@ Spirit *Spirit::clone() const
 void Spirit::update()
 {
 }
+
+void Spirit::update(Scenes::Event *event)
+{
+}
+
+void Spirit::update(Scenes::KeyEvent *event)
+{
+}
+
+void Spirit::update(Scenes::MouseEvent *event)
+{
+}

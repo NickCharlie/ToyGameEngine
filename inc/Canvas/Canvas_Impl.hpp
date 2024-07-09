@@ -46,9 +46,12 @@ namespace ToyGameEngine
 
 			virtual void draw_scene() = 0;
 
+			virtual void update() = 0;
+
 			virtual void load_scene(Scenes::Scene *scene)
 			{
 				_scene = scene;
+				_scene->load_canvas(std::bind(&ICanvas_Impl::update, this));
 			}
 
 		};

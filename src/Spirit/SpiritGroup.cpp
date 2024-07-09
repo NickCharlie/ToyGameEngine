@@ -332,3 +332,78 @@ void SpiritGroup::remove_back()
         _objects.pop_back();
     }
 }
+
+void SpiritGroup::update(Scenes::Event *event)
+{
+    if (this->ignore_all_events)
+    {
+        return;
+    }
+
+    if (dynamic_cast<Scenes::KeyEvent *>(event) != nullptr)
+    {
+        if (this->key_event_update)
+        {
+            update(static_cast<Scenes::KeyEvent *>(event));
+        }
+    }
+    else if (dynamic_cast<Scenes::MouseEvent *>(event) != nullptr)
+    {
+        if (this->mouse_event_update)
+        {
+            update(static_cast<Scenes::MouseEvent *>(event));
+        }
+    }
+    else
+    {
+        for (Spirit *sp : _objects)
+        {
+            if (!sp->ignore_all_events)
+            {
+                sp->update(event);
+                if (!event->active)
+                {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void SpiritGroup::update(Scenes::KeyEvent *event)
+{
+    if (!this->key_event_update)
+    {
+        return;
+    }
+    for (Spirit *sp : _objects)
+    {
+        if (!sp->ignore_all_events)
+        {
+            sp->update(event);
+            if (!event->active)
+            {
+                break;
+            }
+        }
+    }
+}
+
+void SpiritGroup::update(Scenes::MouseEvent *event)
+{
+    if (!this->mouse_event_update)
+    {
+        return;
+    }
+    for (Spirit *sp : _objects)
+    {
+        if (!sp->ignore_all_events)
+        {
+            sp->update(event);
+            if (!event->active)
+            {
+                break;
+            }
+        }
+    }
+}

@@ -2,6 +2,7 @@
 
 #include <string>
 #include "Math/Geometry/Point.hpp"
+#include "Scene/Event.hpp"
 
 
 namespace ToyGameEngine
@@ -10,6 +11,11 @@ namespace ToyGameEngine
     {
         class Spirit : public Math::Geometry::Point
         {
+        public:
+            bool key_event_update = false;
+            bool mouse_event_update = false;
+            bool ignore_all_events = false;
+
         public:
             Spirit(const Math::Geometry::Vector &position);
             Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity);
@@ -36,7 +42,13 @@ namespace ToyGameEngine
 
             Spirits::Spirit *clone() const override;
 
-            void update();
+            virtual void update();
+
+            virtual void update(Scenes::Event *event);
+
+            virtual void update(Scenes::KeyEvent *event);
+
+            virtual void update(Scenes::MouseEvent *event);
 
         protected:
             Math::Geometry::Vector _velocity;

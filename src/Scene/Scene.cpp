@@ -1,4 +1,7 @@
+#include <thread>
+#include <chrono>
 #include "Scene/Scene.hpp"
+#include "Spirit/ShapedSpirit.hpp"
 #include "Math/Geometry/Algorithm.hpp"
 
 using namespace ToyGameEngine::Scenes;
@@ -7,6 +10,11 @@ using namespace ToyGameEngine::Math;
 
 Scene::Scene()
 {
+}
+
+void Scene::load_canvas(std::function<void()> func)
+{
+    _canvas_update = func;
 }
 
 std::vector<SpiritGroup> &Scene::groups()
@@ -72,5 +80,63 @@ bool Scene::is_visible(const Spirit *spirit) const
     else
     {
         return false;
+    }
+}
+
+void Scene::append_event(Event *event)
+{
+    _events.push(event);
+}
+
+void Scene::respond_events()
+{
+    if (_events.empty())
+    {
+        return;
+    }
+    Event *event = nullptr;
+    while (!_events.empty())
+    {
+        event = _events.front();
+        _events.pop();
+        for (Spirits::SpiritGroup &group : _groups)
+        {
+            group.update(event);
+            if (!event->active)
+            {
+                break;
+            }
+        }
+        delete event;
+    }
+}
+
+void Scene::start()
+{
+    if (_is_running)
+    {
+        return;
+    }
+
+    _is_running = true;
+    std::thread(&Scene::run, this).detach();
+}
+
+void Scene::stop()
+{
+    _is_running = false;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+void Scene::run()
+{
+    std::chrono::steady_clock::time_point start_point;
+    while (_is_running)
+    {
+        start_point = std::chrono::steady_clock::now();
+        respond_events();
+        update();
+        _canvas_update();
+        std::this_thread::sleep_until(start_point + std::chrono::milliseconds(33));
     }
 }

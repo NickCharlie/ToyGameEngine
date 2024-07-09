@@ -21,10 +21,16 @@
     <pointsize>10</pointsize>
    </font>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Demo</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
    <property name="styleSheet">
     <string notr="true">Widget#centralWidget{background:rgb(37, 37, 38);}</string>
    </property>
@@ -33,7 +39,11 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="ToyGameEngine::Canvas::ICanvas" name="canvas" native="true"/>
+     <widget class="ToyGameEngine::Canvas::ICanvas" name="canvas" native="true">
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
