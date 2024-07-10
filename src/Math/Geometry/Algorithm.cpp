@@ -232,12 +232,82 @@ double Geometry::distance(const Geometry::Point &start0, const Geometry::Point &
 {
     if (Geometry::is_parallel(start0, end0, start1, end1))
     {
-        return Geometry::distance(start0, start1, end1, true);
+        if (Geometry::foot_point(start1, end1, start0, point1) && Geometry::foot_point(start1, end1, end0, point1))
+        {
+            point0 = (start0 + end0) / 2;
+            Geometry::foot_point(start1, end1, point0, point1, true);
+        }
+        else if (Geometry::foot_point(start0, end0, start1, point0) && Geometry::foot_point(start0, end0, end1, point0))
+        {
+            point1 = (start1 + end1) / 2;
+            Geometry::foot_point(start0, end0, point1, point0, true);
+        }
+        else
+        {
+            if (Geometry::foot_point(start1, end1, start0, point0))
+            {
+                if ((end0 - start0) * (end1 - start1) >= 0)
+                {
+                    point1 = (point0 + end1) / 2;
+                }
+                else
+                {
+                    point1 = (point0 + start1) / 2;
+                }
+                Geometry::foot_point(start0, end0, point1, point0, true);
+            }
+            else if (Geometry::foot_point(start1, end1, end0, point0))
+            {
+                if ((end0 - start0) * (end1 - start1) >= 0)
+                {
+                    point1 = (point0 + start1) / 2;
+                }
+                else
+                {
+                    point1 = (point0 + end1) / 2;
+                }
+                Geometry::foot_point(start0, end0, point1, point0, true);
+            }
+            else
+            {
+                double distance[5] = {Geometry::distance_square(start0, start1), Geometry::distance_square(start0, end1),
+                    Geometry::distance_square(end0, start1), Geometry::distance(end0, end1), DBL_MAX};
+                int index = 0;
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (distance[i] < distance[4])
+                    {
+                        index = i;
+                        distance[4] = distance[i];
+                    }
+                }
+                switch (index)
+                {
+                case 0:
+                    point0 = start0;
+                    point1 = start1;
+                    break;
+                case 1:
+                    point0 = start0;
+                    point1 = end1;
+                    break;
+                case 2:
+                    point0 = end0;
+                    point1 = start1;
+                    break;
+                case 3:
+                    point0 = end0;
+                    point1 = end1;
+                    break;
+                }
+            }
+        }
+        return Geometry::distance(start0, start1, end1);
     }
     else
     {
-        double distance[5] = {Geometry::distance(start0, start1, end1, true), Geometry::distance(end0, start1, end1, true),
-            Geometry::distance(start1, start0, end0, true), Geometry::distance(end1, start0, end0, true), DBL_MAX};
+        double distance[5] = {Geometry::distance(start0, start1, end1), Geometry::distance(end0, start1, end1),
+            Geometry::distance(start1, start0, end0), Geometry::distance(end1, start0, end0), DBL_MAX};
         int index = 0;
         for (int i = 0; i < 4; ++i)
         {
@@ -252,19 +322,59 @@ double Geometry::distance(const Geometry::Point &start0, const Geometry::Point &
         {
         case 0:
             point0 = start0;
-            Geometry::foot_point(start1, end1, start0, point1);
+            if (!Geometry::foot_point(start1, end1, start0, point1))
+            {
+                if (Geometry::distance_square(start0, start1) <= Geometry::distance_square(start0, end1))
+                {
+                    point1 = start1;
+                }
+                else
+                {
+                    point1 = end1;
+                }
+            }
             break;
         case 1:
             point0 = end0;
-            Geometry::foot_point(start1, end1, end0, point1);
+            if (!Geometry::foot_point(start1, end1, end0, point1))
+            {
+                if (Geometry::distance_square(end0, start1) <= Geometry::distance_square(end0, end1))
+                {
+                    point1 = start1;
+                }
+                else
+                {
+                    point1 = end1;
+                }
+            }
             break;
         case 2:
             point1 = start1;
-            Geometry::foot_point(start0, end0, start1, point0);
+            if (!Geometry::foot_point(start0, end0, start1, point0))
+            {
+                if (Geometry::distance_square(start1, start0) <= Geometry::distance_square(start1, end0))
+                {
+                    point0 = start0;
+                }
+                else
+                {
+                    point0 = end0;
+                }
+            }
             break;
         case 3:
             point1 = end1;
-            Geometry::foot_point(start0, end0, end1, point0);
+            if (Geometry::foot_point(start0, end0, end1, point0))
+            {
+                if (Geometry::distance_square(end1, start0) <= Geometry::distance_square(end1, end0))
+                {
+                    point0 = start0;
+                }
+                else
+                {
+                    point0 = end0;
+                }
+            }
             break;
         }
         return distance[4];

@@ -211,7 +211,7 @@ namespace ToyGameEngine
                 Geometry::Point point0, point1, point2;
                 Geometry::Triangle triangle, last_triangle;
                 double distance[3] = {DBL_MAX, DBL_MAX, DBL_MAX};
-                std::vector<std::tuple<const Geometry::Point, const Geometry::Point>> point_pairs;
+                std::vector<std::tuple<Geometry::Point, Geometry::Point>> point_pairs;
 
                 Collision::gjk_furthest_point(points0, start, end, point0);
                 Collision::gjk_furthest_point(points1, end, start, point1);
