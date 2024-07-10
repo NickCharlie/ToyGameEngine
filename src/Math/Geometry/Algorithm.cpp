@@ -207,6 +207,213 @@ double Geometry::distance(const Geometry::Point &point, const Geometry::Rectangl
     return dis;
 }
 
+double Geometry::distance(const Geometry::Point &start0, const Geometry::Point &end0, const Geometry::Point &start1, const Geometry::Point &end1)
+{
+    if (Geometry::is_parallel(start0, end0, start1, end1))
+    {
+        return Geometry::distance(start0, start1, end1, true);
+    }
+    else
+    {
+        double distance[5] = {Geometry::distance(start0, start1, end1, true), Geometry::distance(end0, start1, end1, true),
+            Geometry::distance(start1, start0, end0, true), Geometry::distance(end1, start0, end0, true), DBL_MAX};
+        for (int i = 0; i < 4; ++i)
+        {
+            if (distance[i] < distance[4])
+            {
+                distance[4] = distance[i];
+            }
+        }
+        return distance[4];
+    }
+}
+
+double Geometry::distance(const Geometry::Point &start0, const Geometry::Point &end0, const Geometry::Point &start1, const Geometry::Point &end1, Geometry::Point &point0, Geometry::Point &point1)
+{
+    if (Geometry::is_parallel(start0, end0, start1, end1))
+    {
+        return Geometry::distance(start0, start1, end1, true);
+    }
+    else
+    {
+        double distance[5] = {Geometry::distance(start0, start1, end1, true), Geometry::distance(end0, start1, end1, true),
+            Geometry::distance(start1, start0, end0, true), Geometry::distance(end1, start0, end0, true), DBL_MAX};
+        int index = 0;
+        for (int i = 0; i < 4; ++i)
+        {
+            if (distance[i] < distance[4])
+            {
+                index = i;
+                distance[4] = distance[i];
+            }
+        }
+
+        switch (index)
+        {
+        case 0:
+            point0 = start0;
+            Geometry::foot_point(start1, end1, start0, point1);
+            break;
+        case 1:
+            point0 = end0;
+            Geometry::foot_point(start1, end1, end0, point1);
+            break;
+        case 2:
+            point1 = start1;
+            Geometry::foot_point(start0, end0, start1, point0);
+            break;
+        case 3:
+            point1 = end1;
+            Geometry::foot_point(start0, end0, end1, point0);
+            break;
+        }
+        return distance[4];
+    }
+}
+
+
+double Geometry::distance_square(const double x0, const double y0, const double x1, const double y1)
+{
+    return (x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1);
+}
+
+double Geometry::distance_square(const Geometry::Point &point0, const Geometry::Point &point1)
+{
+    return (point0.x - point1.x) * (point0.x - point1.x) + (point0.y - point1.y) * (point0.y - point1.y);
+}
+
+double Geometry::distance_square(const Geometry::Point &point, const Geometry::Line &line, const bool infinite)
+{
+    if (line.front().x == line.back().x)
+    {
+        if (infinite)
+        {
+            return std::pow(point.x - line.front().x, 2);
+        }
+        else
+        {
+            if ((point.y >= line.front().y && point.y <= line.back().y) ||
+                (point.y <= line.front().y && point.y >= line.back().y))
+            {
+                return std::pow(point.x - line.front().x, 2);
+            }
+            else
+            {
+                return std::min(Geometry::distance_square(point, line.front()), Geometry::distance_square(point, line.back()));
+            }
+        }
+    }
+    else if (line.front().y == line.back().y)
+    {
+        if (infinite)
+        {
+            return std::pow(point.y - line.front().y, 2);
+        }
+        else
+        {
+            if ((point.x >= line.front().x && point.x <= line.back().x) ||
+                (point.x <= line.front().x && point.x >= line.back().x))
+            {
+                return std::pow(point.y - line.front().y, 2);
+            }
+            else
+            {
+                return std::min(Geometry::distance_square(point, line.front()), Geometry::distance_square(point, line.back()));
+            }
+        }
+    }
+    
+    const double a = line.back().y - line.front().y, 
+                b = line.front().x - line.back().x,
+                c = line.back().x * line.front().y - line.front().x * line.back().y;
+    if (infinite)
+    {
+        return std::pow(a * point.x + b * point.y + c, 2) / (a * a + b * b);
+    }
+    else
+    {
+        const double k = ((point.x - line.front().x) * (line.back().x - line.front().x) +
+            (point.y - line.front().y) * (line.back().y - line.front().y)) /
+            (std::pow(line.back().x - line.front().x, 2) + std::pow(line.back().y - line.front().y, 2)); 
+        const double x = line.front().x + k * (line.back().x - line.front().x);
+
+        if ((x >= line.front().x && x <= line.back().x) || (x <= line.front().x && x >= line.back().x))
+        {
+            return std::pow(a * point.x + b * point.y + c, 2) / (a * a + b * b);
+        }
+        else
+        {
+            return std::min(Geometry::distance_square(point, line.front()), Geometry::distance_square(point, line.back()));
+        }
+    }
+}
+
+double Geometry::distance_square(const Geometry::Point &point, const Geometry::Point &start, const Geometry::Point &end, const bool infinite)
+{
+    if (start.x == end.x)
+    {
+        if (infinite)
+        {
+            return std::pow(point.x - start.x, 2);
+        }
+        else
+        {
+            if ((point.y >= start.y && point.y <= end.y) ||
+                (point.y <= start.y && point.y >= end.y))
+            {
+                return std::pow(point.x - start.x, 2);
+            }
+            else
+            {
+                return std::min(Geometry::distance_square(point, start), Geometry::distance_square(point, end));
+            }
+        }
+    }
+    else if (start.y == end.y)
+    {
+        if (infinite)
+        {
+            return std::pow(point.y - start.y, 2);
+        }
+        else
+        {
+            if ((point.x >= start.x && point.x <= end.x) ||
+                (point.x <= start.x && point.x >= end.x))
+            {
+                return std::pow(point.y - start.y, 2);
+            }
+            else
+            {
+                return std::min(Geometry::distance_square(point, start), Geometry::distance_square(point, end));
+            }
+        }
+    }
+    
+    const double a = end.y - start.y, 
+                b = start.x - end.x,
+                c = end.x * start.y - start.x * end.y;
+    if (infinite)
+    {
+        return std::pow(a * point.x + b * point.y + c, 2) / (a * a + b * b);
+    }
+    else
+    {
+        const double k = ((point.x - start.x) * (end.x - start.x) +
+            (point.y - start.y) * (end.y - start.y)) /
+            (std::pow(end.x - start.x, 2) + std::pow(end.y - start.y, 2)); 
+        const double x = start.x + k * (end.x - start.x);
+
+        if ((x >= start.x && x <= end.x) || (x <= start.x && x >= end.x))
+        {
+            return std::pow(a * point.x + b * point.y + c, 2) / (a * a + b * b);
+        }
+        else
+        {
+            return std::min(Geometry::distance_square(point, start), Geometry::distance_square(point, end));
+        }
+    }
+}
+
 
 bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Line &line, const bool infinite)
 {
@@ -1459,9 +1666,9 @@ bool Geometry::is_intersected(const Geometry::Circle &circle, const Geometry::Tr
     }
 
     return Geometry::is_inside(circle, triangle, true) ||
-        Geometry::distance(circle, triangle[0], triangle[1]) <= circle.radius ||
-        Geometry::distance(circle, triangle[1], triangle[2]) <= circle.radius ||
-        Geometry::distance(circle, triangle[0], triangle[2]) <= circle.radius;
+        Geometry::distance_square(circle, triangle[0], triangle[1]) <= circle.radius * circle.radius ||
+        Geometry::distance_square(circle, triangle[1], triangle[2]) <= circle.radius * circle.radius ||
+        Geometry::distance_square(circle, triangle[0], triangle[2]) <= circle.radius * circle.radius;
 }
 
 bool Geometry::is_intersected(const Geometry::Rectangle &rect0, const Geometry::Rectangle &rect1, const bool inside)

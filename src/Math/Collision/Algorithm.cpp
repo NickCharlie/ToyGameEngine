@@ -396,8 +396,8 @@ double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &c
     const double length = Geometry::distance(circle0, circle1);
     if (length < circle0.radius + circle1.radius)
     {
-        vec = (circle1 - circle0).normalize() * (circle0.radius + circle1.radius - length);
-        return circle0.radius + circle1.radius - length;
+        vec = (circle1 - circle0).normalize() * (circle0.radius + circle1.radius - length) / 2;
+        return (circle0.radius + circle1.radius - length) / 2;
     }
     else if (length == circle0.radius + circle1.radius)
     {
@@ -615,6 +615,241 @@ double Collision::epa(const Geometry::GeometryObject *points0, const Geometry::G
         case Geometry::Type::LINE:
             return Collision::epa(*static_cast<const Geometry::Line *>(points0),
                 *static_cast<const Geometry::Line *>(points1), vec);
+        default:
+            return -1;
+        }
+    default:
+        return -1;
+    }
+}
+
+double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, Geometry::Point &head, Geometry::Point &tail)
+{
+    head.clear(), tail.clear();
+    const double length = Geometry::distance(circle0, circle1);
+    if (length < circle0.radius + circle1.radius)
+    {
+        Geometry::Vector vec = (circle1 - circle0).normalize();
+        head = circle0 + vec * (circle0.radius - circle1.radius + length) / 2;
+        tail = circle0 + vec * (3 * circle0.radius + circle1.radius - length) / 2;
+        return (circle0.radius + circle1.radius - length) / 2;
+    }
+    else if (length == circle0.radius + circle1.radius)
+    {
+        return 0;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+double Collision::epa(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1, Geometry::Point &head, Geometry::Point &tail)
+{
+    switch (points0->type())
+    {
+    case Geometry::Type::POLYGON:
+        switch (points0->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Collision::epa(*static_cast<const Geometry::Polygon *>(points0),
+                *static_cast<const Geometry::Polygon *>(points1), head, tail);
+        case Geometry::Type::RECTANGLE:
+        case Geometry::Type::SQUARE:
+        case Geometry::Type::AABBRECT:
+            return Collision::epa(*static_cast<const Geometry::Polygon *>(points0),
+                *static_cast<const Geometry::Rectangle *>(points1), head, tail);
+        case Geometry::Type::TRIANGLE:
+            return Collision::epa(*static_cast<const Geometry::Polygon *>(points0),
+                *static_cast<const Geometry::Triangle *>(points1), head, tail);
+        case Geometry::Type::CIRCLE:
+            return Collision::epa(*static_cast<const Geometry::Polygon *>(points0),
+                *static_cast<const Geometry::Circle *>(points1), head, tail);
+        case Geometry::Type::POLYLINE:
+            return Collision::epa(*static_cast<const Geometry::Polygon *>(points0),
+                *static_cast<const Geometry::Polyline *>(points1), head, tail);
+        case Geometry::Type::BEZIER:
+            return Collision::epa(*static_cast<const Geometry::Polygon *>(points0),
+                *static_cast<const Geometry::Bezier *>(points1), head, tail);
+        case Geometry::Type::LINE:
+            return Collision::epa(*static_cast<const Geometry::Polygon *>(points0),
+                *static_cast<const Geometry::Line *>(points1), head, tail);
+        default:
+            return -1;
+        }
+    case Geometry::Type::RECTANGLE:
+    case Geometry::Type::SQUARE:
+    case Geometry::Type::AABBRECT:
+        switch (points0->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Collision::epa(*static_cast<const Geometry::Rectangle *>(points0),
+                *static_cast<const Geometry::Polygon *>(points1), head, tail);
+        case Geometry::Type::RECTANGLE:
+        case Geometry::Type::SQUARE:
+        case Geometry::Type::AABBRECT:
+            return Collision::epa(*static_cast<const Geometry::Rectangle *>(points0),
+                *static_cast<const Geometry::Rectangle *>(points1), head, tail);
+        case Geometry::Type::TRIANGLE:
+            return Collision::epa(*static_cast<const Geometry::Rectangle *>(points0),
+                *static_cast<const Geometry::Triangle *>(points1), head, tail);
+        case Geometry::Type::CIRCLE:
+            return Collision::epa(*static_cast<const Geometry::Rectangle *>(points0),
+                *static_cast<const Geometry::Circle *>(points1), head, tail);
+        case Geometry::Type::POLYLINE:
+            return Collision::epa(*static_cast<const Geometry::Rectangle *>(points0),
+                *static_cast<const Geometry::Polyline *>(points1), head, tail);
+        case Geometry::Type::BEZIER:
+            return Collision::epa(*static_cast<const Geometry::Rectangle *>(points0),
+                *static_cast<const Geometry::Bezier *>(points1), head, tail);
+        case Geometry::Type::LINE:
+            return Collision::epa(*static_cast<const Geometry::Rectangle *>(points0),
+                *static_cast<const Geometry::Line *>(points1), head, tail);
+        default:
+            return -1;
+        }
+    case Geometry::Type::TRIANGLE:
+        switch (points0->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Collision::epa(*static_cast<const Geometry::Triangle *>(points0),
+                *static_cast<const Geometry::Polygon *>(points1), head, tail);
+        case Geometry::Type::RECTANGLE:
+        case Geometry::Type::SQUARE:
+        case Geometry::Type::AABBRECT:
+            return Collision::epa(*static_cast<const Geometry::Triangle *>(points0),
+                *static_cast<const Geometry::Rectangle *>(points1), head, tail);
+        case Geometry::Type::TRIANGLE:
+            return Collision::epa(*static_cast<const Geometry::Triangle *>(points0),
+                *static_cast<const Geometry::Triangle *>(points1), head, tail);
+        case Geometry::Type::CIRCLE:
+            return Collision::epa(*static_cast<const Geometry::Triangle *>(points0),
+                *static_cast<const Geometry::Circle *>(points1), head, tail);
+        case Geometry::Type::POLYLINE:
+            return Collision::epa(*static_cast<const Geometry::Triangle *>(points0),
+                *static_cast<const Geometry::Polyline *>(points1), head, tail);
+        case Geometry::Type::BEZIER:
+            return Collision::epa(*static_cast<const Geometry::Triangle *>(points0),
+                *static_cast<const Geometry::Bezier *>(points1), head, tail);
+        case Geometry::Type::LINE:
+            return Collision::epa(*static_cast<const Geometry::Triangle *>(points0),
+                *static_cast<const Geometry::Line *>(points1), head, tail);
+        default:
+            return -1;
+        }
+    case Geometry::Type::CIRCLE:
+        switch (points0->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Collision::epa(*static_cast<const Geometry::Circle *>(points0),
+                *static_cast<const Geometry::Polygon *>(points1), head, tail);
+        case Geometry::Type::RECTANGLE:
+        case Geometry::Type::SQUARE:
+        case Geometry::Type::AABBRECT:
+            return Collision::epa(*static_cast<const Geometry::Circle *>(points0),
+                *static_cast<const Geometry::Rectangle *>(points1), head, tail);
+        case Geometry::Type::TRIANGLE:
+            return Collision::epa(*static_cast<const Geometry::Circle *>(points0),
+                *static_cast<const Geometry::Triangle *>(points1), head, tail);
+        case Geometry::Type::CIRCLE:
+            return Collision::epa(*static_cast<const Geometry::Circle *>(points0),
+                *static_cast<const Geometry::Circle *>(points1), head, tail);
+        case Geometry::Type::POLYLINE:
+            return Collision::epa(*static_cast<const Geometry::Circle *>(points0),
+                *static_cast<const Geometry::Polyline *>(points1), head, tail);
+        case Geometry::Type::BEZIER:
+            return Collision::epa(*static_cast<const Geometry::Circle *>(points0),
+                *static_cast<const Geometry::Bezier *>(points1), head, tail);
+        case Geometry::Type::LINE:
+            return Collision::epa(*static_cast<const Geometry::Circle *>(points0),
+                *static_cast<const Geometry::Line *>(points1), head, tail);
+        default:
+            return -1;
+        }
+    case Geometry::Type::POLYLINE:
+        switch (points0->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Collision::epa(*static_cast<const Geometry::Polyline *>(points0),
+                *static_cast<const Geometry::Polygon *>(points1), head, tail);
+        case Geometry::Type::RECTANGLE:
+        case Geometry::Type::SQUARE:
+        case Geometry::Type::AABBRECT:
+            return Collision::epa(*static_cast<const Geometry::Polyline *>(points0),
+                *static_cast<const Geometry::Rectangle *>(points1), head, tail);
+        case Geometry::Type::TRIANGLE:
+            return Collision::epa(*static_cast<const Geometry::Polyline *>(points0),
+                *static_cast<const Geometry::Triangle *>(points1), head, tail);
+        case Geometry::Type::CIRCLE:
+            return Collision::epa(*static_cast<const Geometry::Polyline *>(points0),
+                *static_cast<const Geometry::Circle *>(points1), head, tail);
+        case Geometry::Type::POLYLINE:
+            return Collision::epa(*static_cast<const Geometry::Polyline *>(points0),
+                *static_cast<const Geometry::Polyline *>(points1), head, tail);
+        case Geometry::Type::BEZIER:
+            return Collision::epa(*static_cast<const Geometry::Polyline *>(points0),
+                *static_cast<const Geometry::Bezier *>(points1), head, tail);
+        case Geometry::Type::LINE:
+            return Collision::epa(*static_cast<const Geometry::Polyline *>(points0),
+                *static_cast<const Geometry::Line *>(points1), head, tail);
+        default:
+            return -1;
+        }
+    case Geometry::Type::BEZIER:
+        switch (points0->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Collision::epa(*static_cast<const Geometry::Bezier *>(points0),
+                *static_cast<const Geometry::Polygon *>(points1), head, tail);
+        case Geometry::Type::RECTANGLE:
+        case Geometry::Type::SQUARE:
+        case Geometry::Type::AABBRECT:
+            return Collision::epa(*static_cast<const Geometry::Bezier *>(points0),
+                *static_cast<const Geometry::Rectangle *>(points1), head, tail);
+        case Geometry::Type::TRIANGLE:
+            return Collision::epa(*static_cast<const Geometry::Bezier *>(points0),
+                *static_cast<const Geometry::Triangle *>(points1), head, tail);
+        case Geometry::Type::CIRCLE:
+            return Collision::epa(*static_cast<const Geometry::Bezier *>(points0),
+                *static_cast<const Geometry::Circle *>(points1), head, tail);
+        case Geometry::Type::POLYLINE:
+            return Collision::epa(*static_cast<const Geometry::Bezier *>(points0),
+                *static_cast<const Geometry::Polyline *>(points1), head, tail);
+        case Geometry::Type::BEZIER:
+            return Collision::epa(*static_cast<const Geometry::Bezier *>(points0),
+                *static_cast<const Geometry::Bezier *>(points1), head, tail);
+        case Geometry::Type::LINE:
+            return Collision::epa(*static_cast<const Geometry::Bezier *>(points0),
+                *static_cast<const Geometry::Line *>(points1), head, tail);
+        default:
+            return -1;
+        }
+    case Geometry::Type::LINE:
+        switch (points0->type())
+        {
+        case Geometry::Type::POLYGON:
+            return Collision::epa(*static_cast<const Geometry::Line *>(points0),
+                *static_cast<const Geometry::Polygon *>(points1), head, tail);
+        case Geometry::Type::RECTANGLE:
+        case Geometry::Type::SQUARE:
+        case Geometry::Type::AABBRECT:
+            return Collision::epa(*static_cast<const Geometry::Line *>(points0),
+                *static_cast<const Geometry::Rectangle *>(points1), head, tail);
+        case Geometry::Type::TRIANGLE:
+            return Collision::epa(*static_cast<const Geometry::Line *>(points0),
+                *static_cast<const Geometry::Triangle *>(points1), head, tail);
+        case Geometry::Type::CIRCLE:
+            return Collision::epa(*static_cast<const Geometry::Line *>(points0),
+                *static_cast<const Geometry::Circle *>(points1), head, tail);
+        case Geometry::Type::POLYLINE:
+            return Collision::epa(*static_cast<const Geometry::Line *>(points0),
+                *static_cast<const Geometry::Polyline *>(points1), head, tail);
+        case Geometry::Type::BEZIER:
+            return Collision::epa(*static_cast<const Geometry::Line *>(points0),
+                *static_cast<const Geometry::Bezier *>(points1), head, tail);
+        case Geometry::Type::LINE:
+            return Collision::epa(*static_cast<const Geometry::Line *>(points0),
+                *static_cast<const Geometry::Line *>(points1), head, tail);
         default:
             return -1;
         }
