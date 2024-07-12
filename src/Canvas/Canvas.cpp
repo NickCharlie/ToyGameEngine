@@ -1,6 +1,8 @@
 #include "Canvas/Canvas.hpp"
 #include "Spirit/ShapedSpirit.hpp"
 
+#include <iostream>
+
 using namespace ToyGameEngine::Canvas;
 using namespace ToyGameEngine::Math;
 using namespace ToyGameEngine::Spirits;
@@ -171,9 +173,56 @@ void ICanvas::resizeEvent(QResizeEvent *event)
 
 void ICanvas::keyPressEvent(QKeyEvent *event)
 {
-    Scenes::KeyEvent *key_event = new Scenes::KeyEvent(static_cast<Scenes::Key>(event->key()));
+
+    if (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down ||
+        event->key() == Qt::Key_Left || event->key() == Qt::Key_Right) 
+    {
+            this->key.insert(static_cast<Scenes::Key>(event->key()));
+            check_keys();
+    }
+
+    Scenes::KeyEvent *key_event = new Scenes::KeyEvent(this->key);
+
     key_event->is_auto_repeat = event->isAutoRepeat();
     _scene->append_event(key_event);
 
     return QWidget::keyPressEvent(event);
+}
+
+void ICanvas::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down ||
+        event->key() == Qt::Key_Left || event->key() == Qt::Key_Right) 
+    {
+            this->key.erase(static_cast<Scenes::Key>(event->key()));
+            check_keys();
+    }
+
+    Scenes::KeyEvent *key_event = new Scenes::KeyEvent(this->key);
+
+    key_event->is_auto_repeat = event->isAutoRepeat();
+    _scene->append_event(key_event);
+
+    QWidget::keyReleaseEvent(event);
+}
+
+void ICanvas::check_keys() 
+{
+
+    if ((this->key.find(static_cast<Scenes::Key>(Qt::Key_Up))) != this->key.end() && ((this->key.find(static_cast<Scenes::Key>(Qt::Key_Left)))!= this->key.end())) 
+    {
+        std::cout << "Up + Left 被按下" << std::endl;
+    }
+    if (this->key.find(static_cast<Scenes::Key>(Qt::Key_Up)) != this->key.end() && (this->key.find(static_cast<Scenes::Key>(Qt::Key_Right)) != this->key.end()))
+    {
+        std::cout << "Up + Right 被按下" << std::endl;
+    }
+    if (this->key.find(static_cast<Scenes::Key>(Qt::Key_Down))!= this->key.end() && (this->key.find(static_cast<Scenes::Key>(Qt::Key_Left)) != this->key.end()))
+    {
+        std::cout << "Down + Left 被按下" << std::endl;
+    }
+    if (this->key.find(static_cast<Scenes::Key>(Qt::Key_Down))!= this->key.end() && (this->key.find(static_cast<Scenes::Key>(Qt::Key_Right)) != this->key.end()))
+    {
+        std::cout << "Down + Right 被按下" << std::endl;
+    }
 }

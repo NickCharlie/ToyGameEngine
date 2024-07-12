@@ -3,6 +3,9 @@
 #include "Spirit/ShapedSpirit.hpp"
 #include "Scene/Event.hpp"
 
+#include <iostream>
+#include <unordered_set>
+
 namespace ToyGameEngine
 {
     namespace Spirits
@@ -62,27 +65,37 @@ namespace ToyGameEngine
         
             void update(Scenes::KeyEvent *event) override
             {
-                switch (event->key)
+                
+                for (Scenes::Key k : event->key)
                 {
-                case Scenes::Key::Key_Up:
-                    this->translate(0, 4);
-                    break;
-                case Scenes::Key::Key_Left:
-                    this->translate(-4, 0);
-                    break;
-                case Scenes::Key::Key_Right:
-                    this->translate(4, 0);
-                    break;
-                case Scenes::Key::Key_Down:
-                    this->translate(0, -4);
-                    break;
-                default:
-                    break;
+                    switch (k)
+                    {
+                    case Scenes::Key::Key_Up:
+                        this->translate(0, 4);
+                        break;
+                    case Scenes::Key::Key_Left:
+                        this->translate(-4, 0);
+                        break;
+                    case Scenes::Key::Key_Right:
+                        this->translate(4, 0);
+                        break;
+                    case Scenes::Key::Key_Down:
+                        this->translate(0, -4);
+                        break;
+                    default:
+                        break;
+                    }
+                        event->active = false;
+
                 }
+
                 event->active = false;
             }
 
         private:
+
+            std::unordered_set<Scenes::Key> keys_pressed;
+
             void init()
             {
                 this->key_event_update = true;

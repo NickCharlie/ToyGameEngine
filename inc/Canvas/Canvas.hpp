@@ -4,6 +4,9 @@
 #include <QKeyEvent>
 #include "Canvas_Impl.hpp"
 #include "GeometryGroup.hpp"
+#include "Scene/KeyCode.hpp"
+
+#include <unordered_set>
 
 namespace ToyGameEngine
 {
@@ -15,7 +18,8 @@ namespace ToyGameEngine
         {
         private:
             QPolygonF _qpoints;
-
+            
+            std::unordered_set<Scenes::Key> key;
         public:
             ICanvas(QWidget *parent = nullptr) : QWidget(parent) {}
 
@@ -47,6 +51,8 @@ namespace ToyGameEngine
 
             void draw_scene();
 
+            void check_keys();
+
         protected:
             void mousePressEvent(QMouseEvent *event);
 
@@ -60,7 +66,9 @@ namespace ToyGameEngine
 
             void resizeEvent(QResizeEvent *event);
 
-            void keyPressEvent(QKeyEvent *event);
+            void keyPressEvent(QKeyEvent *event) override;
+
+            void keyReleaseEvent(QKeyEvent *event) override;
         };
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "Scene/KeyCode.hpp"
-
+#include <unordered_set>
 
 namespace ToyGameEngine
 {
@@ -22,11 +22,24 @@ namespace ToyGameEngine
 
         struct KeyEvent : public Event
         {
-            Key key;
+            std::unordered_set<Key> key;
 
-            KeyEvent(const Key value)
-                : key(value) {}
+            KeyEvent(const Key value) 
+            {
+                key.insert(value);
+            }
 
+            KeyEvent(const std::unordered_set<Key> keys) : key(keys) {}
+
+            void insert(const Key value) 
+            {
+                key.insert(value);
+            }
+
+            std::unordered_set<Key>& get_key()
+            {
+                return key;
+            }
             EventType type() const override
             {
                 return EventType::KEY_EVENT;
