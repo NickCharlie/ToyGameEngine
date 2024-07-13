@@ -43,9 +43,9 @@ namespace ToyGameEngine
 
                 bool select(const Geometry::AABBRect &rect, std::vector<Geometry::GeometryObject *> &objects) const;
 
-                bool find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects) const;
+                bool find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects, const bool norepeat = true) const;
 
-                bool find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs) const;
+                bool find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs, const bool norepeat = true) const;
             };
             
             class QuadTree
@@ -89,9 +89,9 @@ namespace ToyGameEngine
 
                 bool select(const Geometry::AABBRect &rect, std::vector<Geometry::GeometryObject *> &objects) const;
 
-                bool find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects) const;
+                bool find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects, const bool norepeat = true) const;
 
-                bool find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs) const;
+                bool find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs, const bool norepeat = true) const;
             };
         }
     }

@@ -271,7 +271,7 @@ bool Collision::QuadTreeNode::select(const Geometry::AABBRect &rect, std::vector
     }
 }
 
-bool Collision::QuadTreeNode::find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects) const
+bool Collision::QuadTreeNode::find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects, const bool norepeat) const
 {
     if (_nodes[0] == nullptr)
     {
@@ -284,11 +284,18 @@ bool Collision::QuadTreeNode::find_collision_objects(const Geometry::GeometryObj
         _nodes[1]->find_collision_objects(object, objects);
         _nodes[2]->find_collision_objects(object, objects);
         _nodes[3]->find_collision_objects(object, objects);
+
+        if (norepeat)
+        {
+            std::set<Geometry::GeometryObject *> temp(objects.begin(), objects.end());
+            objects.assign(temp.begin(), temp.end());
+        }
+
         return objects.size() > size;
     }
 }
 
-bool Collision::QuadTreeNode::find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs) const
+bool Collision::QuadTreeNode::find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs, const bool norepeat) const
 {
     if (_nodes[0] == nullptr)
     {
@@ -302,15 +309,18 @@ bool Collision::QuadTreeNode::find_collision_pairs(std::vector<std::pair<Geometr
         _nodes[2]->find_collision_pairs(pairs);
         _nodes[3]->find_collision_pairs(pairs);
 
-        for (size_t i = 0, count = pairs.size(); i < count; ++i)
+        if (norepeat)
         {
-            for (size_t j = count - 1; j > i; --j)
+            for (size_t i = 0, count = pairs.size(); i < count; ++i)
             {
-                if ((pairs[i].first == pairs[j].first && pairs[i].second == pairs[j].second)
-                    || (pairs[i].first == pairs[j].second && pairs[i].second == pairs[j].first))
+                for (size_t j = count - 1; j > i; --j)
                 {
-                    pairs.erase(pairs.begin() + j);
-                    --count;
+                    if ((pairs[i].first == pairs[j].first && pairs[i].second == pairs[j].second)
+                        || (pairs[i].first == pairs[j].second && pairs[i].second == pairs[j].first))
+                    {
+                        pairs.erase(pairs.begin() + j);
+                        --count;
+                    }
                 }
             }
         }
@@ -590,12 +600,12 @@ bool Collision::QuadTree::select(const Geometry::AABBRect &rect, std::vector<Geo
     return _root != nullptr && _root->select(rect, objects);
 }
 
-bool Collision::QuadTree::find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects) const
+bool Collision::QuadTree::find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects, const bool norepeat) const
 {
-    return _root != nullptr && _root->find_collision_objects(object, objects);
+    return _root != nullptr && _root->find_collision_objects(object, objects, norepeat);
 }
 
-bool Collision::QuadTree::find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs) const
+bool Collision::QuadTree::find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs, const bool norepeat) const
 {
-    return _root != nullptr && _root->find_collision_pairs(pairs);
+    return _root != nullptr && _root->find_collision_pairs(pairs, norepeat);
 }

@@ -611,7 +611,7 @@ bool Collision::GridMap::select(const Geometry::AABBRect &rect, std::vector<Geom
     return objects.size() > size;
 }
 
-bool Collision::GridMap::find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects) const
+bool Collision::GridMap::find_collision_objects(const Geometry::GeometryObject *object, std::vector<Geometry::GeometryObject *> &objects, const bool norepeat) const
 {
     if (object == nullptr)
     {
@@ -627,12 +627,16 @@ bool Collision::GridMap::find_collision_objects(const Geometry::GeometryObject *
             grid.find_collision_objects(object, objects);
         }
     }
-    std::set<Geometry::GeometryObject *> temp(objects.begin(), objects.end());
-    objects.assign(temp.begin(), temp.end());
+
+    if (norepeat)
+    {
+        std::set<Geometry::GeometryObject *> temp(objects.begin(), objects.end());
+        objects.assign(temp.begin(), temp.end());
+    }
     return objects.size() > size;
 }
 
-bool Collision::GridMap::find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs) const
+bool Collision::GridMap::find_collision_pairs(std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> &pairs, const bool norepeat) const
 {
     const size_t size = pairs.size();
     for (const GridNode &grid : _grids)
@@ -640,15 +644,18 @@ bool Collision::GridMap::find_collision_pairs(std::vector<std::pair<Geometry::Ge
         grid.find_collision_pairs(pairs);
     }
 
-    for (size_t i = 0, count = pairs.size(); i < count; ++i)
+    if (norepeat)
     {
-        for (size_t j = count - 1; j > i; --j)
+        for (size_t i = 0, count = pairs.size(); i < count; ++i)
         {
-            if ((pairs[i].first == pairs[j].first && pairs[i].second == pairs[j].second)
-                || (pairs[i].first == pairs[j].second && pairs[i].second == pairs[j].first))
+            for (size_t j = count - 1; j > i; --j)
             {
-                pairs.erase(pairs.begin() + j);
-                --count;
+                if ((pairs[i].first == pairs[j].first && pairs[i].second == pairs[j].second)
+                    || (pairs[i].first == pairs[j].second && pairs[i].second == pairs[j].first))
+                {
+                    pairs.erase(pairs.begin() + j);
+                    --count;
+                }
             }
         }
     }
