@@ -340,22 +340,23 @@ void SpiritGroup::update(Scenes::Event *event)
         return;
     }
 
-    if (dynamic_cast<Scenes::KeyEvent *>(event) != nullptr)
+    switch (event->type())
     {
+    case Scenes::EventType::KEY_EVENT:
         if (this->key_event_update)
         {
             update(static_cast<Scenes::KeyEvent *>(event));
         }
-    }
-    else if (dynamic_cast<Scenes::MouseEvent *>(event) != nullptr)
-    {
+        break;
+    case Scenes::EventType::MOUSE_EVENT:
         if (this->mouse_event_update)
         {
             update(static_cast<Scenes::MouseEvent *>(event));
         }
-    }
-    else
-    {
+        break;
+    case Scenes::EventType::DESTRUCTION_EVENT:
+        update(static_cast<Scenes::DestructionEvent *>(event));
+    default:
         for (Spirit *sp : _objects)
         {
             if (!sp->ignore_all_events)
@@ -367,6 +368,7 @@ void SpiritGroup::update(Scenes::Event *event)
                 }
             }
         }
+        break;
     }
 }
 
@@ -404,6 +406,20 @@ void SpiritGroup::update(Scenes::MouseEvent *event)
             {
                 break;
             }
+        }
+    }
+}
+
+void SpiritGroup::update(Scenes::DestructionEvent *event)
+{
+    for (size_t i = 0, count = _objects.size(); i < count; ++i)
+    {
+        if (_objects[i] == event->spirit)
+        {
+            delete _objects[i];
+            _objects.erase(_objects.begin() + i);
+            event->active = false;
+            break;
         }
     }
 }

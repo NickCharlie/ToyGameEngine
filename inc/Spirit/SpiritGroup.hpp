@@ -115,6 +115,8 @@ namespace ToyGameEngine
             void update(Scenes::KeyEvent *event);
 
             void update(Scenes::MouseEvent *event);
+
+            void update(Scenes::DestructionEvent *event);
         };
 
     }

@@ -66,7 +66,7 @@ namespace ToyGameEngine
             void update(Scenes::KeyEvent *event) override
             {
                 
-                for (Scenes::Key k : event->key)
+                for (Scenes::Key k : event->keys)
                 {
                     switch (k)
                     {

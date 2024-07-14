@@ -51,8 +51,6 @@ namespace ToyGameEngine
 
             void draw_scene();
 
-            void check_keys();
-
         protected:
             void mousePressEvent(QMouseEvent *event);
 

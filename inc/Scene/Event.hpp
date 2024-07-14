@@ -4,9 +4,14 @@
 
 namespace ToyGameEngine
 {
+    namespace Spirits
+    {
+        class Spirit;
+    }
+
     namespace Scenes
     {
-        enum EventType { EVENT, KEY_EVENT, MOUSE_EVENT };
+        enum EventType { EVENT, KEY_EVENT, MOUSE_EVENT, DESTRUCTION_EVENT };
 
         struct Event
         {
@@ -22,24 +27,20 @@ namespace ToyGameEngine
 
         struct KeyEvent : public Event
         {
-            std::unordered_set<Key> key;
+            std::unordered_set<Key> keys;
 
             KeyEvent(const Key value) 
             {
-                key.insert(value);
+                keys.insert(value);
             }
 
-            KeyEvent(const std::unordered_set<Key> keys) : key(keys) {}
+            KeyEvent(const std::unordered_set<Key> keys_) : keys(keys_) {}
 
             void insert(const Key value) 
             {
-                key.insert(value);
+                keys.insert(value);
             }
 
-            std::unordered_set<Key>& get_key()
-            {
-                return key;
-            }
             EventType type() const override
             {
                 return EventType::KEY_EVENT;
@@ -58,7 +59,22 @@ namespace ToyGameEngine
                 return EventType::MOUSE_EVENT;
             }
         };
-        
+
+        struct DestructionEvent : public Event
+        {
+            Spirits::Spirit *spirit;
+
+            DestructionEvent(Spirits::Spirit *spirit_)
+                : spirit(spirit_)
+            {
+
+            }
+
+            EventType type() const override
+            {
+                return EventType::DESTRUCTION_EVENT;
+            }
+        };
         
     }
 }
