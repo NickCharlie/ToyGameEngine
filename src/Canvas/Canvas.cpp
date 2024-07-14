@@ -1,7 +1,7 @@
 #include "Canvas/Canvas.hpp"
-#include "Spirit/ShapedSpirit.hpp"
 
 #include <iostream>
+#include <QSize>
 
 using namespace ToyGameEngine::Canvas;
 using namespace ToyGameEngine::Math;
@@ -12,6 +12,49 @@ void ICanvas::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
 
     draw_scene();
+}
+
+void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double height, const QPixmap map)
+{
+    QPixmap scaled_map = map.scaled(QSize(width, height),Qt::KeepAspectRatio,Qt::SmoothTransformation);
+
+    switch (sp->type())
+    {
+    case Geometry::Type::RECTANGLE:
+        sp = static_cast<ShapedSpirit<Geometry::Rectangle> *>(sp);
+        painter.drawPixmap(sp->x - width / 2, sp->y - height / 2, width, height, scaled_map);
+        break;
+    case Geometry::Type::SQUARE:
+        sp = static_cast<ShapedSpirit<Geometry::Square> *>(sp);
+        painter.drawPixmap(sp->x - width / 2, sp->y - height / 2, width, height, scaled_map);
+        break;
+    case Geometry::Type::AABBRECT:
+        sp = static_cast<ShapedSpirit<Geometry::AABBRect> *>(sp);
+        painter.drawPixmap(sp->x - width / 2, sp->y - height / 2, width, height, scaled_map);
+        break;
+    case Geometry::Type::CIRCLE:
+        sp = static_cast<ShapedSpirit<Geometry::Circle> *>(sp);
+        painter.drawPixmap(sp->x - width / 2, sp->y - height / 2, width, height, scaled_map);
+        break;
+    case Geometry::Type::POLYGON:
+        sp = static_cast<ShapedSpirit<Geometry::Rectangle> *>(sp);
+        painter.drawPixmap(sp->x - width / 2, sp->y - height / 2, width, height, scaled_map);
+        break;
+    case Geometry::Type::POLYLINE:
+        sp = static_cast<ShapedSpirit<Geometry::Polyline> *>(sp);
+        painter.drawPixmap(sp->x - width / 2, sp->y - height / 2, width, height, scaled_map);
+        break;
+    case Geometry::Type::BEZIER:
+        sp = static_cast<ShapedSpirit<Geometry::Bezier> *>(sp);
+        painter.drawPixmap(sp->x - width / 2, sp->y - height / 2, width, height, scaled_map);
+        break;
+    case Geometry::Type::POINT:
+        sp = static_cast<ShapedSpirit<Geometry::Point> *>(sp);
+        painter.drawPixmap(sp->x - width, sp->y - height, width, height, scaled_map);
+        break;
+    default:
+        break;
+    }
 }
 
 void ICanvas::draw_scene()
@@ -31,7 +74,7 @@ void ICanvas::draw_scene()
 
     for (const Spirits::SpiritGroup &group : _scene->groups())
     {
-        for (const Spirits::Spirit *spirit : group)
+        for (Spirits::Spirit *spirit : group)
         {
             if (!_scene->is_visible(spirit))
             {
@@ -41,28 +84,60 @@ void ICanvas::draw_scene()
             switch (spirit->type())
             {
             case Geometry::Type::RECTANGLE:
-                draw_rectangle(painter, static_cast<const ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape());
+                draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape());
+                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit),
+                 static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().width(),
+                 static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().height(),
+                 static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->get_pixmap());
                 break;
             case Geometry::Type::SQUARE:
-                draw_rectangle(painter, static_cast<const ShapedSpirit<Geometry::Square> *>(spirit)->shape());
+                draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape());
+                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Square> *>(spirit),
+                 static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape().width(),
+                 static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape().height(),
+                 static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->get_pixmap());
                 break;
             case Geometry::Type::AABBRECT:
-                draw_rectangle(painter, static_cast<const ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape());
+                draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape());
+                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit),
+                 static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape().width(),
+                 static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape().height(),
+                 static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->get_pixmap());
                 break;
             case Geometry::Type::CIRCLE:
-                draw_circle(painter, static_cast<const ShapedSpirit<Geometry::Circle> *>(spirit)->shape());
+                draw_circle(painter, static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->shape());
+                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Circle> *>(spirit),
+                 static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->shape().radius,
+                 static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->shape().radius,
+                 static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->get_pixmap());
                 break;
             case Geometry::Type::POLYGON:
-                draw_polygon(painter, static_cast<const ShapedSpirit<Geometry::Polygon> *>(spirit)->shape());
+                draw_polygon(painter, static_cast<ShapedSpirit<Geometry::Polygon> *>(spirit)->shape());
+                // draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Polygon> *>(spirit),
+                //  static_cast<ShapedSpirit<Geometry::Polygon> *>(spirit)->shape().width(),
+                //  static_cast<ShapedSpirit<Geometry::Polygon> *>(spirit)->shape().height(),
+                //  static_cast<ShapedSpirit<Geometry::Polygon> *>(spirit)->get_pixmap());
                 break;
             case Geometry::Type::POLYLINE:
-                draw_polyline(painter, static_cast<const ShapedSpirit<Geometry::Polyline> *>(spirit)->shape());
+                draw_polyline(painter, static_cast<ShapedSpirit<Geometry::Polyline> *>(spirit)->shape());
+                // draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Polyline> *>(spirit),
+                //  static_cast<ShapedSpirit<Geometry::Polyline> *>(spirit)->shape().width(),
+                //  static_cast<ShapedSpirit<Geometry::Polyline> *>(spirit)->shape().height(),
+                //  static_cast<ShapedSpirit<Geometry::Polyline> *>(spirit)->get_pixmap());
                 break;
             case Geometry::Type::BEZIER:
-                draw_bezier(painter, static_cast<const ShapedSpirit<Geometry::Bezier> *>(spirit)->shape());
+                draw_bezier(painter, static_cast<ShapedSpirit<Geometry::Bezier> *>(spirit)->shape());
+                // draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Bezier> *>(spirit),
+                //  static_cast<ShapedSpirit<Geometry::Bezier> *>(spirit)->shape().width(),
+                //  static_cast<ShapedSpirit<Geometry::Bezier> *>(spirit)->shape().height(),
+                //  static_cast<ShapedSpirit<Geometry::Bezier> *>(spirit)->get_pixmap());
                 break;
             case Geometry::Type::POINT:
-                draw_point(painter, static_cast<const ShapedSpirit<Geometry::Point> *>(spirit)->shape());
+                draw_point(painter, static_cast<ShapedSpirit<Geometry::Point> *>(spirit)->shape());
+                // draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Point> *>(spirit),
+                //  static_cast<ShapedSpirit<Geometry::Point> *>(spirit)->shape().width(),
+                //  static_cast<ShapedSpirit<Geometry::Point> *>(spirit)->shape().height(),
+                //  static_cast<ShapedSpirit<Geometry::Point> *>(spirit)->get_pixmap());
                 break;
             default:
                 break;

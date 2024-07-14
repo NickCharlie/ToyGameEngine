@@ -5,7 +5,9 @@
 #include "Canvas_Impl.hpp"
 #include "GeometryGroup.hpp"
 #include "Scene/KeyCode.hpp"
+#include "Spirit/ShapedSpirit.hpp"
 
+#include <QPixmap>
 #include <unordered_set>
 
 namespace ToyGameEngine
@@ -43,6 +45,8 @@ namespace ToyGameEngine
             void draw_rectangle(QPainter &painter, const Math::Geometry::Rectangle &rectangle) override;
 
             void draw_triangle(QPainter &painter, const Math::Geometry::Triangle &triangle) override;
+
+            void draw_pixmap(QPainter &painter, Spirits::Spirit* sp, double width, double height, const QPixmap map);
 
             void update() override;
 

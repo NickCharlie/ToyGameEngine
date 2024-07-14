@@ -3,6 +3,8 @@
 #include "Spirit.hpp"
 #include "Math/Geometry/AllGeometryObjects.hpp"
 
+#include <QPixmap>
+
 namespace ToyGameEngine
 {
     namespace Spirits
@@ -143,8 +145,20 @@ namespace ToyGameEngine
                 return _shape.mini_bounding_rect();
             }
 
+            void set_pixmap(QPixmap map) 
+            {
+                pixmap = map;
+            }
+
+            QPixmap& get_pixmap()
+            {
+                return pixmap;
+            }
+
         private:
             T _shape;
+            
+            QPixmap pixmap;
         };
 
 
