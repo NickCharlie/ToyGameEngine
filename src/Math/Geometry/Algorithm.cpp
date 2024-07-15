@@ -733,171 +733,10 @@ bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Polygon &
 
 bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Rectangle &rect, const bool coincide)
 {
-    if (!rect.empty() && Geometry::is_inside(point, rect.bounding_rect(), coincide))
+    if (!rect.empty())
     {
-        if (coincide)
-        {
-            for (size_t i = 1; i < 4; ++i)
-            {
-                if (Geometry::is_inside(point, rect[i-1], rect[i]))
-                {
-                    return true;
-                }
-            }
-            if (Geometry::is_inside(point, rect[0], rect[3]))
-            {
-                return true;
-            }
-        }
-        else
-        {
-            for (size_t i = 1; i < 4; ++i)
-            {
-                if (Geometry::is_inside(point, rect[i-1], rect[i]))
-                {
-                    return false;
-                }
-            }
-            if (Geometry::is_inside(point, rect[0], rect[3]))
-            {
-                return false;
-            }
-        }
-
-        double x = (-DBL_MAX);
-        std::vector<Geometry::MarkedPoint> points;
-        for (const Geometry::Point &p : rect)
-        {
-            x = std::max(x, p.x);
-            points.emplace_back(p.x, p.y);
-        }
-
-        Geometry::Point temp, end(x + 80, point.y); // 找到交点并计算其几何数
-        for (size_t i = 1, count = points.size(); i < count; ++i)
-        {
-            if (!Geometry::is_parallel(point, end, points[i], points[i - 1]) &&
-                Geometry::is_intersected(point, end, points[i], points[i - 1], temp))
-            {
-                points.insert(points.begin() + i++, Geometry::MarkedPoint(temp.x, temp.y, false));
-                ++count;
-                if (Geometry::cross(temp, end, points[i], points[i - 1]) >= 0)
-                {
-                    points[i - 1].value = -1;
-                }
-                else
-                {
-                    points[i - 1].value = 1;
-                }
-            }
-        }
-
-        if (points.size() == 4) // 无交点
-        {
-            return false;
-        }
-
-        // 去除重复交点
-        for (size_t count, j, i = points.size() - 1; i > 0; --i)
-        {
-            count = points[i].original ? 0 : 1;
-            for (j = i; j > 0; --j)
-            {
-                if (std::abs(points[i].x - points[j - 1].x) > Geometry::EPSILON || 
-                    std::abs(points[i].y - points[j - 1].y) > Geometry::EPSILON)
-                {
-                    break;
-                }
-                if (!points[j - 1].original)
-                {
-                    ++count;
-                }
-            }
-            if (count < 2)
-            {
-                continue;
-            }
-
-            int value = 0;
-            for (size_t k = i; k > j; --k)
-            {
-                if (!points[k].original)
-                {
-                    value += points[k].value;
-                }
-            }
-            if (!points[j].original)
-            {
-                value += points[j].value;
-            }
-            if (value == 0)
-            {
-                for (size_t k = i; k > j; --k)
-                {
-                    if (!points[k].original)
-                    {
-                        points.erase(points.begin() + k);
-                    }
-                }
-                if (!points[j].original)
-                {
-                    points.erase(points.begin() + j);
-                }
-            }
-            else
-            {
-                bool flag = false;
-                for (size_t k = i; k > j; --k)
-                {
-                    flag = (flag || points[k].original);
-                    points.erase(points.begin() + k);
-                }
-                points[j].value = value;
-                points[j].original = (flag || points[j].original);
-            }
-            i = j > 0 ? j : 1;
-        }
-
-        // 处理重边上的交点
-        for (size_t i = 0, j = 1, count = points.size(); j < count; i = j)
-        {
-            while (i < count && points[i].value == 0)
-            {
-                ++i;
-            }
-            j = i + 1;
-            while (j < count && points[j].value == 0)
-            {
-                ++j;
-            }
-            if (j >= count)
-            {
-                break;
-            }
-            if (rect.index(points[i]) == SIZE_MAX || rect.index(points[j]) == SIZE_MAX)
-            {
-                continue;
-            }
-
-            if (points[i].value > 0 && points[j].value > 0)
-            {
-                points.erase(points.begin() + j);
-                --count;
-            }
-            else if (points[i].value < 0 && points[j].value < 0)
-            {
-                points.erase(points.begin() + i);
-                --count;
-            }
-            else
-            {
-                points.erase(points.begin() + j--);
-                points.erase(points.begin() + i);
-                --count;
-                --count;
-            }
-        }
-
-        return std::count_if(points.begin(), points.end(), [](const Geometry::MarkedPoint &p) { return p.value != 0; }) % 2 == 1;
+        return Geometry::is_inside(point, rect[0], rect[1], rect[2], coincide)
+            || Geometry::is_inside(point, rect[0], rect[2], rect[3], coincide);
     }
     else
     {
@@ -913,141 +752,11 @@ bool Geometry::is_inside(const Geometry::Point &point, const Geometry::Square &s
         {
             return true;
         }
-        
-        double x = (-DBL_MAX);
-        std::vector<Geometry::MarkedPoint> points;
-        for (const Geometry::Point &p : square)
+        else
         {
-            x = std::max(x, p.x);
-            points.emplace_back(p.x, p.y);
+            return Geometry::is_inside(point, square[0], square[1], square[2], coincide)
+                || Geometry::is_inside(point, square[0], square[2], square[3], coincide);
         }
-
-        Geometry::Point temp, end(x + 80, point.y); // 找到交点并计算其几何数
-        for (size_t i = 1, count = points.size(); i < count; ++i)
-        {
-            if (!Geometry::is_parallel(point, end, points[i], points[i - 1]) &&
-                Geometry::is_intersected(point, end, points[i], points[i - 1], temp))
-            {
-                points.insert(points.begin() + i++, Geometry::MarkedPoint(temp.x, temp.y, false));
-                ++count;
-                if (Geometry::cross(temp, end, points[i], points[i - 1]) >= 0)
-                {
-                    points[i - 1].value = -1;
-                }
-                else
-                {
-                    points[i - 1].value = 1;
-                }
-            }
-        }
-
-        if (points.size() == 4) // 无交点
-        {
-            return false;
-        }
-
-        // 去除重复交点
-        for (size_t count, j, i = points.size() - 1; i > 0; --i)
-        {
-            count = points[i].original ? 0 : 1;
-            for (j = i; j > 0; --j)
-            {
-                if (std::abs(points[i].x - points[j - 1].x) > Geometry::EPSILON || 
-                    std::abs(points[i].y - points[j - 1].y) > Geometry::EPSILON)
-                {
-                    break;
-                }
-                if (!points[j - 1].original)
-                {
-                    ++count;
-                }
-            }
-            if (count < 2)
-            {
-                continue;
-            }
-
-            int value = 0;
-            for (size_t k = i; k > j; --k)
-            {
-                if (!points[k].original)
-                {
-                    value += points[k].value;
-                }
-            }
-            if (!points[j].original)
-            {
-                value += points[j].value;
-            }
-            if (value == 0)
-            {
-                for (size_t k = i; k > j; --k)
-                {
-                    if (!points[k].original)
-                    {
-                        points.erase(points.begin() + k);
-                    }
-                }
-                if (!points[j].original)
-                {
-                    points.erase(points.begin() + j);
-                }
-            }
-            else
-            {
-                bool flag = false;
-                for (size_t k = i; k > j; --k)
-                {
-                    flag = (flag || points[k].original);
-                    points.erase(points.begin() + k);
-                }
-                points[j].value = value;
-                points[j].original = (flag || points[j].original);
-            }
-            i = j > 0 ? j : 1;
-        }
-
-        // 处理重边上的交点
-        for (size_t i = 0, j = 1, count = points.size(); j < count; i = j)
-        {
-            while (i < count && points[i].value == 0)
-            {
-                ++i;
-            }
-            j = i + 1;
-            while (j < count && points[j].value == 0)
-            {
-                ++j;
-            }
-            if (j >= count)
-            {
-                break;
-            }
-            if (square.index(points[i]) == SIZE_MAX || square.index(points[j]) == SIZE_MAX)
-            {
-                continue;
-            }
-
-            if (points[i].value > 0 && points[j].value > 0)
-            {
-                points.erase(points.begin() + j);
-                --count;
-            }
-            else if (points[i].value < 0 && points[j].value < 0)
-            {
-                points.erase(points.begin() + i);
-                --count;
-            }
-            else
-            {
-                points.erase(points.begin() + j--);
-                points.erase(points.begin() + i);
-                --count;
-                --count;
-            }
-        }
-
-        return std::count_if(points.begin(), points.end(), [](const Geometry::MarkedPoint &p) { return p.value != 0; }) % 2 == 1;
     }
     else
     {
@@ -1061,14 +770,13 @@ bool Geometry::is_inside(const Geometry::Point &point, const Geometry::AABBRect 
     {
         return false;
     }
-    const double x = point.x, y = point.y;
     if (coincide)
     {
-        return rect.left() <= x && x <= rect.right() && rect.bottom() <= y && y <= rect.top();
+        return rect.left() <= point.x && point.x <= rect.right() && rect.bottom() <= point.y && point.y <= rect.top();
     }
     else
     {
-        return rect.left() < x && x < rect.right() && rect.bottom() < y && y < rect.top();
+        return rect.left() < point.x && point.x < rect.right() && rect.bottom() < point.y && point.y < rect.top();
     }
 }
 

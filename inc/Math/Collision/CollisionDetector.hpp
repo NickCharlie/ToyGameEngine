@@ -149,7 +149,7 @@ namespace ToyGameEngine
                                     moved_object_pairs.emplace_back(object, crushed_objects[i]);
                                     if (Collision::epa(object, crushed_objects[i], tx, ty, vec) > 0)
                                     {
-                                        if (vec.x * tx + vec.y * ty >= 0)
+                                        if (vec.x * tx + vec.y * ty > 0)
                                         {
                                             crushed_objects[i]->translate(vec.x, vec.y);
                                             _detector.update(crushed_objects[i]);

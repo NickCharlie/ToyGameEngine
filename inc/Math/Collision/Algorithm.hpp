@@ -29,6 +29,9 @@ namespace ToyGameEngine
             Geometry::Vector edge_direciton(const Geometry::Point &start, const Geometry::Point &end, const bool to_origin);
 
 
+            bool is_point_inside(const Geometry::Point &point, const Geometry::Polygon &polygon);
+
+
             template <typename L, typename R>
             bool gjk(const L &points0, const R &point1)
             {
@@ -110,7 +113,28 @@ namespace ToyGameEngine
 
             bool gjk(const Geometry::Circle &circle0, const Geometry::Circle &circle1);
 
+            bool gjk(const Geometry::Circle &circle, const Geometry::Polygon &polygon);
+
+            bool gjk(const Geometry::Circle &circle, const Geometry::Rectangle &rectangle);
+
+            bool gjk(const Geometry::Circle &circle, const Geometry::AABBRect &rectangle);
+
+            bool gjk(const Geometry::Circle &circle, const Geometry::Square &square);
+
+            bool gjk(const Geometry::Circle &circle, const Geometry::Triangle &triangle);
+
+            bool gjk(const Geometry::Polygon &polygon, const Geometry::Circle &circle);
+
+            bool gjk(const Geometry::Rectangle &rectangle, const Geometry::Circle &circle);
+
+            bool gjk(const Geometry::AABBRect &rectangle, const Geometry::Circle &circle);
+
+            bool gjk(const Geometry::Square &square, const Geometry::Circle &circle);
+
+            bool gjk(const Geometry::Triangle &triangle, const Geometry::Circle &circle);
+
             bool gjk(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1);
+
 
             template <typename L, typename R>
             double epa(const L &points0, const R &points1, Geometry::Vector &vec)
@@ -269,10 +293,31 @@ namespace ToyGameEngine
 
                 return vec.length();
             }
-        
+
             double epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, Geometry::Vector &vec);
 
+            double epa(const Geometry::Circle &circle, const Geometry::Polygon &polygon, Geometry::Vector &vec);
+
+            double epa(const Geometry::Circle &circle, const Geometry::Rectangle &rectangle, Geometry::Vector &vec);
+
+            double epa(const Geometry::Circle &circle, const Geometry::AABBRect &rectangle, Geometry::Vector &vec);
+
+            double epa(const Geometry::Circle &circle, const Geometry::Square &square, Geometry::Vector &vec);
+
+            double epa(const Geometry::Circle &circle, const Geometry::Triangle &triangle, Geometry::Vector &vec);
+
+            double epa(const Geometry::Polygon &polygon, const Geometry::Circle &circle, Geometry::Vector &vec);
+
+            double epa(const Geometry::Rectangle &rectangle, const Geometry::Circle &circle, Geometry::Vector &vec);
+
+            double epa(const Geometry::AABBRect &rectangle, const Geometry::Circle &circle, Geometry::Vector &vec);
+
+            double epa(const Geometry::Square &square, const Geometry::Circle &circle, Geometry::Vector &vec);
+
+            double epa(const Geometry::Triangle &triangle, const Geometry::Circle &circle, Geometry::Vector &vec);
+
             double epa(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1, Geometry::Vector &vec);
+
 
             template <typename L, typename R>
             double epa(const L &points0, const R &points1, Geometry::Point &head, Geometry::Point &tail)
@@ -433,11 +478,37 @@ namespace ToyGameEngine
 
             double epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, Geometry::Point &head, Geometry::Point &tail);
 
+            double epa(const Geometry::Circle &circle, const Geometry::Polygon &polygon, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Circle &circle, const Geometry::Rectangle &rectangle, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Circle &circle, const Geometry::AABBRect &rectangle, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Circle &circle, const Geometry::Square &square, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Circle &circle, const Geometry::Triangle &triangle, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Polygon &polygon, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Rectangle &rectangle, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::AABBRect &rectangle, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Square &square, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail);
+
+            double epa(const Geometry::Triangle &triangle, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail);
+
             double epa(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1, Geometry::Point &head, Geometry::Point &tail);
-        
+
+
             template <typename L, typename R>
             double epa(const L &points0, const R &points1, const double tx, const double ty, Geometry::Vector &vec)
             {
+                if constexpr (std::is_same_v<L, Geometry::Circle> || std::is_same_v<R, Geometry::Circle>)
+                {
+                    return Collision::epa(points0, points1, vec);
+                }
+
                 Geometry::Point start = points0.average_point(), end = points1.average_point();
                 Geometry::Point point0, point1, point2;
                 Geometry::Triangle triangle, last_triangle;

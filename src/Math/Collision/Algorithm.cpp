@@ -136,10 +136,141 @@ Geometry::Vector Collision::edge_direciton(const Geometry::Point &start, const G
 }
 
 
+bool Collision::is_point_inside(const Geometry::Point &point, const Geometry::Polygon &polygon)
+{
+    for (size_t i = 2, count = polygon.size(); i < count; ++i)
+    {
+        if (Geometry::is_inside(point, polygon.front(), polygon[i - 1], polygon[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 bool Collision::gjk(const Geometry::Circle &circle0, const Geometry::Circle &circle1)
 {
     return (circle0.x - circle1.x) * (circle0.x - circle1.x) + (circle0.y - circle1.y) + (circle0.y - circle1.y)
         <= (circle0.radius + circle1.radius) * (circle0.radius + circle1.radius);
+}
+
+bool Collision::gjk(const Geometry::Circle &circle, const Geometry::Polygon &polygon)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        if (Geometry::distance_square(circle, polygon[i - 1], polygon[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Collision::gjk(const Geometry::Circle &circle, const Geometry::Rectangle &rectangle)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        if (Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return Geometry::distance_square(circle, rectangle[0], rectangle[3]) <= length;
+}
+
+bool Collision::gjk(const Geometry::Circle &circle, const Geometry::AABBRect &rectangle)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        if (Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return Geometry::distance_square(circle, rectangle[0], rectangle[3]) <= length;
+}
+
+bool Collision::gjk(const Geometry::Circle &circle, const Geometry::Square &square)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        if (Geometry::distance_square(circle, square[i - 1], square[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return Geometry::distance_square(circle, square[0], square[3]) <= length;
+}
+
+bool Collision::gjk(const Geometry::Circle &circle, const Geometry::Triangle &triangle)
+{
+    return Geometry::distance_square(circle, triangle[0], triangle[1]) ||
+        Geometry::distance_square(circle, triangle[1], triangle[2]) ||
+        Geometry::distance_square(circle, triangle[0], triangle[2]);
+}
+
+bool Collision::gjk(const Geometry::Polygon &polygon, const Geometry::Circle &circle)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        if (Geometry::distance_square(circle, polygon[i - 1], polygon[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Collision::gjk(const Geometry::Rectangle &rectangle, const Geometry::Circle &circle)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        if (Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return Geometry::distance_square(circle, rectangle[0], rectangle[3]) <= length;
+}
+
+bool Collision::gjk(const Geometry::AABBRect &rectangle, const Geometry::Circle &circle)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        if (Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return Geometry::distance_square(circle, rectangle[0], rectangle[3]) <= length;
+}
+
+bool Collision::gjk(const Geometry::Square &square, const Geometry::Circle &circle)
+{
+    const double length = circle.radius * circle.radius;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        if (Geometry::distance_square(circle, square[i - 1], square[i]) <= length)
+        {
+            return true;
+        }
+    }
+    return Geometry::distance_square(circle, square[0], square[3]) <= length;
+}
+
+bool Collision::gjk(const Geometry::Triangle &triangle, const Geometry::Circle &circle)
+{
+    return Geometry::distance_square(circle, triangle[0], triangle[1]) ||
+        Geometry::distance_square(circle, triangle[1], triangle[2]) ||
+        Geometry::distance_square(circle, triangle[0], triangle[2]);
 }
 
 bool Collision::gjk(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1)
@@ -413,6 +544,7 @@ bool Collision::gjk(const Geometry::GeometryObject *points0, const Geometry::Geo
     }
 }
 
+
 double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, Geometry::Vector &vec)
 {
     vec.clear();
@@ -430,6 +562,712 @@ double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &c
     {
         return -1;
     }
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Polygon &polygon, Geometry::Vector &vec)
+{
+    double length = DBL_MAX, distance = 0;
+    size_t index = 1;
+    vec.clear();
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        distance = Geometry::distance_square(circle, polygon[i - 1], polygon[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Collision::is_point_inside(circle, polygon))
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, polygon[index - 1], circle, point);
+                vec = point - polygon[index - 1];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, polygon[index], circle, point);
+                vec = point - polygon[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index - 1], point);
+                vec = point - polygon[index - 1];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index], point);
+                vec = point - polygon[index];
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Rectangle &rectangle, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, point);
+                vec = point - rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, point);
+                vec = point - rectangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], point);
+                vec = point - rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], point);
+                vec = point - rectangle[index];
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::AABBRect &rectangle, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, point);
+                vec = point - rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, point);
+                vec = point - rectangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], point);
+                vec = point - rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], point);
+                vec = point - rectangle[index];
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Square &square, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, square[0], square[3]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, square[i - 1], square[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, square))
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, square[index > 0 ? index - 1 : 3], circle, point);
+                vec = point - square[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, square[index], circle, point);
+                vec = point - square[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index > 0 ? index - 1 : 3], point);
+                vec = point - square[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index], point);
+                vec = point - square[index];
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Triangle &triangle, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, triangle[0], triangle[2]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 3; ++i)
+    {
+        distance = Geometry::distance_square(circle, triangle[i - 1], triangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, triangle))
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, triangle[index > 0 ? index - 1 : 2], circle, point);
+                vec = point - triangle[index > 0 ? index - 1 : 2];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, triangle[index], circle, point);
+                vec = point - triangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec = point - vec;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index > 0 ? index - 1 : 2], point);
+                vec = point - triangle[index > 0 ? index - 1 : 2];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index], point);
+                vec = point - triangle[index];
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Polygon &polygon, const Geometry::Circle &circle, Geometry::Vector &vec)
+{
+    double length = DBL_MAX, distance = 0;
+    size_t index = 1;
+    vec.clear();
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        distance = Geometry::distance_square(circle, polygon[i - 1], polygon[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Collision::is_point_inside(circle, polygon))
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, polygon[index - 1], circle, point);
+                vec = polygon[index - 1] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, polygon[index], circle, point);
+                vec = polygon[index] - point;
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index - 1], point);
+                vec = polygon[index - 1] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index], point);
+                vec = polygon[index] - point;
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Rectangle &rectangle, const Geometry::Circle &circle, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, point);
+                vec = rectangle[index > 0 ? index - 1 : 3] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, point);
+                vec = rectangle[index] - point;
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], point);
+                vec = rectangle[index > 0 ? index - 1 : 3] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], point);
+                vec = rectangle[index] - point;
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::AABBRect &rectangle, const Geometry::Circle &circle, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, point);
+                vec = rectangle[index > 0 ? index - 1 : 3] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, point);
+                vec = rectangle[index] - point;
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], point);
+                vec = rectangle[index > 0 ? index - 1 : 3] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], point);
+                vec = rectangle[index] - point;
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Square &square, const Geometry::Circle &circle, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, square[0], square[3]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, square[i - 1], square[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, square))
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, square[index > 0 ? index - 1 : 3], circle, point);
+                vec = square[index > 0 ? index - 1 : 3] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, square[index], circle, point);
+                vec = square[index] - point;
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index > 0 ? index - 1 : 3], point);
+                vec = square[index > 0 ? index - 1 : 3] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index], point);
+                vec = square[index] - point;
+            }
+        }
+    }
+    return vec.length();
+}
+
+double Collision::epa(const Geometry::Triangle &triangle, const Geometry::Circle &circle, Geometry::Vector &vec)
+{
+    double length = Geometry::distance_square(circle, triangle[0], triangle[2]), distance = 0;
+    size_t index = 0;
+    vec.clear();
+    for (size_t i = 1; i < 3; ++i)
+    {
+        distance = Geometry::distance_square(circle, triangle[i - 1], triangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    Geometry::Point point;
+    if (Geometry::is_inside(circle, triangle))
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, vec, circle, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, triangle[index > 0 ? index - 1 : 2], circle, point);
+                vec = triangle[index > 0 ? index - 1 : 2] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, triangle[index], circle, point);
+                vec = triangle[index] - point;
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, vec, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, vec, point);
+            vec -= point;
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index > 0 ? index - 1 : 2], point);
+                vec = triangle[index > 0 ? index - 1 : 2] - point;
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index], point);
+                vec = triangle[index] - point;
+            }
+        }
+    }
+    return vec.length();
 }
 
 double Collision::epa(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1, Geometry::Vector &vec)
@@ -646,6 +1484,7 @@ double Collision::epa(const Geometry::GeometryObject *points0, const Geometry::G
     }
 }
 
+
 double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, Geometry::Point &head, Geometry::Point &tail)
 {
     head.clear(), tail.clear();
@@ -665,6 +1504,672 @@ double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &c
     {
         return -1;
     }
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Polygon &polygon, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = DBL_MAX, distance = 0;
+    size_t index = 1;
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        distance = Geometry::distance_square(circle, polygon[i - 1], polygon[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Collision::is_point_inside(circle, polygon))
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, tail, circle, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, polygon[index - 1], circle, head);
+                tail = polygon[index - 1];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, polygon[index], circle, head);
+                tail = polygon[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, tail, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index - 1], head);
+                tail = polygon[index - 1];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index], head);
+                tail = polygon[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Rectangle &rectangle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, tail, circle, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, head);
+                tail = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, head);
+                tail = rectangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, tail, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], head);
+                tail = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], head);
+                tail = rectangle[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::AABBRect &rectangle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, tail, circle, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, head);
+                tail = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, head);
+                tail = rectangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, tail, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], head);
+                tail = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], head);
+                tail = rectangle[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Square &square, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, square[0], square[3]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, square[i - 1], square[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, square))
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, tail, circle, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, square[index > 0 ? index - 1 : 3], circle, head);
+                tail = square[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, square[index], circle, head);
+                tail = square[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, tail, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index > 0 ? index - 1 : 3], head);
+                tail = square[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index], head);
+                tail = square[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Circle &circle, const Geometry::Triangle &triangle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, triangle[0], triangle[2]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 3; ++i)
+    {
+        distance = Geometry::distance_square(circle, triangle[i - 1], triangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, triangle))
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, tail, circle, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, triangle[index > 0 ? index - 1 : 2], circle, head);
+                tail = triangle[index > 0 ? index - 1 : 2];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, triangle[index], circle, head);
+                tail = triangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, tail, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, tail, head);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index > 0 ? index - 1 : 2], head);
+                tail = triangle[index > 0 ? index - 1 : 2];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index], head);
+                tail = triangle[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Polygon &polygon, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = DBL_MAX, distance = 0;
+    size_t index = 1;
+    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    {
+        distance = Geometry::distance_square(circle, polygon[i - 1], polygon[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Collision::is_point_inside(circle, polygon))
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, head, circle, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, polygon[index - 1], circle, tail);
+                head = polygon[index - 1];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, polygon[index], circle, tail);
+                head = polygon[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(polygon[index - 1], polygon[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, head, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, polygon[index - 1]) <= Geometry::distance_square(circle, polygon[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index - 1], tail);
+                head = polygon[index - 1];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, polygon[index], tail);
+                head = polygon[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Rectangle &rectangle, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, head, circle, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, tail);
+                head = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, tail);
+                head = rectangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, head, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], tail);
+                head = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], tail);
+                head = rectangle[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::AABBRect &rectangle, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, rectangle[0], rectangle[3]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, rectangle[i - 1], rectangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, rectangle))
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, head, circle, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index > 0 ? index - 1 : 3], circle, tail);
+                head = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, rectangle[index], circle, tail);
+                head = rectangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(rectangle[index > 0 ? index - 1 : 3], rectangle[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, head, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, rectangle[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, rectangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index > 0 ? index - 1 : 3], tail);
+                head = rectangle[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, rectangle[index], tail);
+                head = rectangle[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Square &square, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, square[0], square[3]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 4; ++i)
+    {
+        distance = Geometry::distance_square(circle, square[i - 1], square[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, square))
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, head, circle, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, square[index > 0 ? index - 1 : 3], circle, tail);
+                head = square[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, square[index], circle, tail);
+                head = square[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(square[index > 0 ? index - 1 : 3], square[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, head, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, square[index > 0 ? index - 1 : 3])
+                <= Geometry::distance_square(circle, square[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index > 0 ? index - 1 : 3], tail);
+                head = square[index > 0 ? index - 1 : 3];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, square[index], tail);
+                head = square[index];
+            }
+        }
+    }
+    return (tail - head).length();
+}
+
+double Collision::epa(const Geometry::Triangle &triangle, const Geometry::Circle &circle, Geometry::Point &head, Geometry::Point &tail)
+{
+    double length = Geometry::distance_square(circle, triangle[0], triangle[2]), distance = 0;
+    size_t index = 0;
+    for (size_t i = 1; i < 3; ++i)
+    {
+        distance = Geometry::distance_square(circle, triangle[i - 1], triangle[i]);
+        if (distance < length)
+        {
+            length = distance;
+            index = i;
+        }
+    }
+    if (length > circle.radius * circle.radius)
+    {
+        return -1;
+    }
+    else if (length == circle.radius * circle.radius)
+    {
+        return 0;
+    }
+
+    if (Geometry::is_inside(circle, triangle))
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, head, circle, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, triangle[index > 0 ? index - 1 : 2], circle, tail);
+                head = triangle[index > 0 ? index - 1 : 2];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, triangle[index], circle, tail);
+                head = triangle[index];
+            }
+        }
+    }
+    else
+    {
+        if (Geometry::foot_point(triangle[index > 0 ? index - 1 : 2], triangle[index], circle, head, false))
+        {
+            Collision::gjk_furthest_point(circle, circle, head, tail);
+        }
+        else
+        {
+            if (Geometry::distance_square(circle, triangle[index > 0 ? index - 1 : 2])
+                <= Geometry::distance_square(circle, triangle[index]))
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index > 0 ? index - 1 : 2], tail);
+                head = triangle[index > 0 ? index - 1 : 2];
+            }
+            else
+            {
+                Collision::gjk_furthest_point(circle, circle, triangle[index], tail);
+                head = triangle[index];
+            }
+        }
+    }
+    return (tail - head).length();
 }
 
 double Collision::epa(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1, Geometry::Point &head, Geometry::Point &tail)
@@ -880,6 +2385,7 @@ double Collision::epa(const Geometry::GeometryObject *points0, const Geometry::G
         return -1;
     }
 }
+
 
 double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, const double tx, const double ty, Geometry::Vector &vec)
 {
