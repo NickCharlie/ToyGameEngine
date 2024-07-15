@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 #include "Math/Geometry/Point.hpp"
 #include "Scene/Event.hpp"
 
@@ -52,12 +53,16 @@ namespace ToyGameEngine
 
             virtual void update(Scenes::MouseEvent *event);
 
+            void load_event_queue(std::function<void(Scenes::Event *)> func);
+
         protected:
             Math::Geometry::Vector _velocity;
             double _direction;
 
             std::string _name;
             bool _visible = true;
+
+            std::function<void(Scenes::Event *)> _append_event;
         };
 
     }

@@ -120,3 +120,8 @@ void Spirit::update(Scenes::KeyEvent *event)
 void Spirit::update(Scenes::MouseEvent *event)
 {
 }
+
+void Spirit::load_event_queue(std::function<void(Scenes::Event *)> func)
+{
+    _append_event = func;
+}

@@ -24,6 +24,10 @@ namespace ToyGameEngine
 
             const std::vector<Spirits::SpiritGroup> &groups() const;
 
+            void append_spiritgroup();
+
+            void append_spiritgroup(Spirits::SpiritGroup &group);
+
             void set_viewport(double left, double top, double right, double bottom);
 
             bool is_visible(const Spirits::Spirit *spirit) const;

@@ -27,6 +27,21 @@ const std::vector<SpiritGroup> &Scene::groups() const
     return _groups;
 }
 
+void Scene::append_spiritgroup()
+{
+    _groups.emplace_back();
+    _groups.back().load_event_queue(std::bind(static_cast<void(Scene::*)(Event *)>(&Scene::append_event),
+        this, std::placeholders::_1));
+}
+
+void Scene::append_spiritgroup(Spirits::SpiritGroup &group)
+{
+    _groups.emplace_back();
+    _groups.back().load_event_queue(std::bind(static_cast<void(Scene::*)(Event *)>(&Scene::append_event),
+        this, std::placeholders::_1));
+    _groups.back().append(group);
+}
+
 void Scene::update()
 {
     for (SpiritGroup &group : _groups)
