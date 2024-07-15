@@ -38,6 +38,8 @@ namespace ToyGameEngine
 
             void respond_events();
 
+            void respond_internal_events();
+
             void start();
 
             void stop();

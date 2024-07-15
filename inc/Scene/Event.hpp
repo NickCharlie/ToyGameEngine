@@ -11,7 +11,7 @@ namespace ToyGameEngine
 
     namespace Scenes
     {
-        enum EventType { EVENT, IO_EVENT, KEY_EVENT, MOUSE_EVENT, DESTRUCTION_EVENT };
+        enum EventType { EVENT, IO_EVENT, KEY_EVENT, MOUSE_EVENT, DESTRUCTION_EVENT, ACTION_EVENT };
 
         struct Event
         {
@@ -84,6 +84,28 @@ namespace ToyGameEngine
                 return EventType::DESTRUCTION_EVENT;
             }
         };
-        
+
+        struct ActionEvent : public Event
+        {
+        private:
+            std::function<void()> func;
+
+        public:
+            ActionEvent(std::function<void()> func_)
+                : func(func_) {}
+
+            void run()
+            {
+                if (func)
+                {
+                    return func();
+                }
+            }
+
+            EventType type() const override
+            {
+                return EventType::ACTION_EVENT;
+            }
+        };
     }
 }

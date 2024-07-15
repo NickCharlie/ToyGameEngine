@@ -119,12 +119,19 @@ void Scene::respond_events()
     {
         event = _internal_events.front();
         _internal_events.pop();
-        for (Spirits::SpiritGroup &group : _groups)
+        if (event->type() == Scenes::EventType::ACTION_EVENT)
         {
-            group.update(event);
-            if (!event->active)
+            static_cast<ActionEvent *>(event)->run();
+        }
+        else
+        {
+            for (Spirits::SpiritGroup &group : _groups)
             {
-                break;
+                group.update(event);
+                if (!event->active)
+                {
+                    break;
+                }
             }
         }
         delete event;
@@ -144,6 +151,36 @@ void Scene::respond_events()
             }
         }
         delete io_event;
+    }
+}
+
+void Scene::respond_internal_events()
+{
+    if (_internal_events.empty())
+    {
+        return;
+    }
+    Event *event = nullptr;
+    while (!_internal_events.empty())
+    {
+        event = _internal_events.front();
+        _internal_events.pop();
+        if (event->type() == Scenes::EventType::ACTION_EVENT)
+        {
+            static_cast<ActionEvent *>(event)->run();
+        }
+        else
+        {
+            for (Spirits::SpiritGroup &group : _groups)
+            {
+                group.update(event);
+                if (!event->active)
+                {
+                    break;
+                }
+            }
+        }
+        delete event;
     }
 }
 
@@ -172,6 +209,7 @@ void Scene::run()
         start_point = std::chrono::steady_clock::now();
         respond_events();
         update();
+        respond_internal_events();
         _canvas_update();
         std::this_thread::sleep_until(start_point + std::chrono::milliseconds(33));
     }
