@@ -27,6 +27,21 @@ const std::vector<SpiritGroup> &Scene::groups() const
     return _groups;
 }
 
+void Scene::append_spiritgroup()
+{
+    _groups.emplace_back();
+    _groups.back().load_event_queue(std::bind(static_cast<void(Scene::*)(Event *)>(&Scene::append_event),
+        this, std::placeholders::_1));
+}
+
+void Scene::append_spiritgroup(Spirits::SpiritGroup &group)
+{
+    _groups.emplace_back();
+    _groups.back().load_event_queue(std::bind(static_cast<void(Scene::*)(Event *)>(&Scene::append_event),
+        this, std::placeholders::_1));
+    _groups.back().append(group);
+}
+
 void Scene::update()
 {
     for (SpiritGroup &group : _groups)
@@ -83,28 +98,86 @@ bool Scene::is_visible(const Spirit *spirit) const
     }
 }
 
+void Scene::append_event(IOEvent *event)
+{
+    _io_events.push(event);
+}
+
 void Scene::append_event(Event *event)
 {
-    _events.push(event);
+    _internal_events.push(event);
 }
 
 void Scene::respond_events()
 {
-    if (_events.empty())
+    if (_io_events.empty() && _internal_events.empty())
     {
         return;
     }
     Event *event = nullptr;
-    while (!_events.empty())
+    while (!_internal_events.empty())
     {
-        event = _events.front();
-        _events.pop();
+        event = _internal_events.front();
+        _internal_events.pop();
+        if (event->type() == Scenes::EventType::ACTION_EVENT)
+        {
+            static_cast<ActionEvent *>(event)->run();
+        }
+        else
+        {
+            for (Spirits::SpiritGroup &group : _groups)
+            {
+                group.update(event);
+                if (!event->active)
+                {
+                    break;
+                }
+            }
+        }
+        delete event;
+    }
+
+    IOEvent *io_event = nullptr;
+    while (!_io_events.empty())
+    {
+        io_event = _io_events.front();
+        _io_events.pop();
         for (Spirits::SpiritGroup &group : _groups)
         {
-            group.update(event);
-            if (!event->active)
+            group.update(io_event);
+            if (!io_event->active)
             {
                 break;
+            }
+        }
+        delete io_event;
+    }
+}
+
+void Scene::respond_internal_events()
+{
+    if (_internal_events.empty())
+    {
+        return;
+    }
+    Event *event = nullptr;
+    while (!_internal_events.empty())
+    {
+        event = _internal_events.front();
+        _internal_events.pop();
+        if (event->type() == Scenes::EventType::ACTION_EVENT)
+        {
+            static_cast<ActionEvent *>(event)->run();
+        }
+        else
+        {
+            for (Spirits::SpiritGroup &group : _groups)
+            {
+                group.update(event);
+                if (!event->active)
+                {
+                    break;
+                }
             }
         }
         delete event;
@@ -136,6 +209,7 @@ void Scene::run()
         start_point = std::chrono::steady_clock::now();
         respond_events();
         update();
+        respond_internal_events();
         _canvas_update();
         std::this_thread::sleep_until(start_point + std::chrono::milliseconds(33));
     }

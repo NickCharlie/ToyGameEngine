@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Spirit/Spirit.hpp"
 #include <vector>
+#include <functional>
+#include "Spirit/Spirit.hpp"
+
 
 namespace ToyGameEngine
 {
@@ -19,6 +21,8 @@ namespace ToyGameEngine
         private:
             std::vector<Spirits::Spirit *> _objects;
             bool _visible = true;
+
+            std::function<void(Scenes::Event *)> _append_event;
 
         public:
             SpiritGroup();
@@ -112,11 +116,15 @@ namespace ToyGameEngine
 
             void update(Scenes::Event *event);
 
+            void update(Scenes::IOEvent *event);
+
             void update(Scenes::KeyEvent *event);
 
             void update(Scenes::MouseEvent *event);
 
             void update(Scenes::DestructionEvent *event);
+
+            void load_event_queue(std::function<void(Scenes::Event *)> func);
         };
 
     }

@@ -20,7 +20,7 @@ MainWindow::~MainWindow()
 void MainWindow::init()
 {
     ui->canvas->load_scene(&_scene);
-    _scene.groups().emplace_back();
+    _scene.append_spiritgroup();
     _scene.groups().back().key_event_update = true;
 
     ToyGameEngine::Spirits::SquareSpirit* sp1 = new ToyGameEngine::Spirits::SquareSpirit(

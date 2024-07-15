@@ -195,12 +195,17 @@ const size_t SpiritGroup::size() const
 void SpiritGroup::append(Spirits::Spirit *object)
 {
     _objects.push_back(object);
+    object->load_event_queue(_append_event);
 }
 
 void SpiritGroup::append(SpiritGroup &group, const bool merge)
 {
     if (merge)
     {
+        for (Spirits::Spirit *sp : group)
+        {
+            sp->load_event_queue(_append_event);
+        }
         _objects.insert(_objects.end(), group._objects.begin(), group._objects.end());
         group._objects.clear();
     }
@@ -209,6 +214,7 @@ void SpiritGroup::append(SpiritGroup &group, const bool merge)
         for (Spirits::Spirit *sp : group)
         {
             _objects.emplace_back(sp->clone());
+            _objects.back()->load_event_queue(_append_event);
         }
     }
 }
@@ -216,6 +222,7 @@ void SpiritGroup::append(SpiritGroup &group, const bool merge)
 void SpiritGroup::insert(const size_t index, Spirits::Spirit *object)
 {
     _objects.insert(_objects.begin() + index, object);
+    object->load_event_queue(_append_event);
 }
 
 std::vector<ToyGameEngine::Spirits::Spirit *>::iterator SpiritGroup::remove(const size_t index)
@@ -342,20 +349,12 @@ void SpiritGroup::update(Scenes::Event *event)
 
     switch (event->type())
     {
-    case Scenes::EventType::KEY_EVENT:
-        if (this->key_event_update)
-        {
-            update(static_cast<Scenes::KeyEvent *>(event));
-        }
-        break;
-    case Scenes::EventType::MOUSE_EVENT:
-        if (this->mouse_event_update)
-        {
-            update(static_cast<Scenes::MouseEvent *>(event));
-        }
-        break;
     case Scenes::EventType::DESTRUCTION_EVENT:
-        update(static_cast<Scenes::DestructionEvent *>(event));
+        return update(static_cast<Scenes::DestructionEvent *>(event));
+    case Scenes::EventType::KEY_EVENT:
+        return update(static_cast<Scenes::KeyEvent *>(event));
+    case Scenes::EventType::MOUSE_EVENT:
+        return update(static_cast<Scenes::MouseEvent *>(event));
     default:
         for (Spirit *sp : _objects)
         {
@@ -369,6 +368,23 @@ void SpiritGroup::update(Scenes::Event *event)
             }
         }
         break;
+    }
+}
+
+void SpiritGroup::update(Scenes::IOEvent *event)
+{
+    if (this->ignore_all_events)
+    {
+        return;
+    }
+
+    if (dynamic_cast<Scenes::KeyEvent *>(event) != nullptr)
+    {
+        update(static_cast<Scenes::KeyEvent *>(event));
+    }
+    else
+    {
+        update(static_cast<Scenes::MouseEvent *>(event));
     }
 }
 
@@ -422,4 +438,9 @@ void SpiritGroup::update(Scenes::DestructionEvent *event)
             break;
         }
     }
+}
+
+void SpiritGroup::load_event_queue(std::function<void(Scenes::Event *)> func)
+{
+    _append_event = func;
 }

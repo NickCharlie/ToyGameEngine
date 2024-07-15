@@ -24,13 +24,21 @@ namespace ToyGameEngine
 
             const std::vector<Spirits::SpiritGroup> &groups() const;
 
+            void append_spiritgroup();
+
+            void append_spiritgroup(Spirits::SpiritGroup &group);
+
             void set_viewport(double left, double top, double right, double bottom);
 
             bool is_visible(const Spirits::Spirit *spirit) const;
 
+            void append_event(IOEvent *event);
+
             void append_event(Event *event);
 
             void respond_events();
+
+            void respond_internal_events();
 
             void start();
 
@@ -44,7 +52,8 @@ namespace ToyGameEngine
 
             Math::Geometry::AABBRect _viewport;
 
-            std::queue<Event *> _events;
+            std::queue<IOEvent *> _io_events;
+            std::queue<Event *> _internal_events;
 
             bool _is_running = false;
 

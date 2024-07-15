@@ -11,12 +11,11 @@ namespace ToyGameEngine
 
     namespace Scenes
     {
-        enum EventType { EVENT, KEY_EVENT, MOUSE_EVENT, DESTRUCTION_EVENT };
+        enum EventType { EVENT, IO_EVENT, KEY_EVENT, MOUSE_EVENT, DESTRUCTION_EVENT, ACTION_EVENT };
 
         struct Event
         {
             bool active = true;
-            bool is_auto_repeat = false;
             size_t response = 0;
 
             virtual EventType type() const
@@ -25,7 +24,17 @@ namespace ToyGameEngine
             }
         };
 
-        struct KeyEvent : public Event
+        struct IOEvent : public Event
+        {
+            bool is_auto_repeat = false;
+
+            virtual EventType type() const
+            {
+                return EventType::IO_EVENT;
+            }
+        };
+
+        struct KeyEvent : public IOEvent
         {
             std::unordered_set<Key> keys;
 
@@ -47,7 +56,7 @@ namespace ToyGameEngine
             }
         };
 
-        struct MouseEvent : public Event
+        struct MouseEvent : public IOEvent
         {
             MouseButton button;
 
@@ -75,6 +84,28 @@ namespace ToyGameEngine
                 return EventType::DESTRUCTION_EVENT;
             }
         };
-        
+
+        struct ActionEvent : public Event
+        {
+        private:
+            std::function<void()> func;
+
+        public:
+            ActionEvent(std::function<void()> func_)
+                : func(func_) {}
+
+            void run()
+            {
+                if (func)
+                {
+                    return func();
+                }
+            }
+
+            EventType type() const override
+            {
+                return EventType::ACTION_EVENT;
+            }
+        };
     }
 }
