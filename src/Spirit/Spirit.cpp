@@ -109,6 +109,10 @@ void Spirit::update(Scenes::Event *event)
 {
 }
 
+void Spirit::update(Scenes::IOEvent *event)
+{
+}
+
 void Spirit::update(Scenes::KeyEvent *event)
 {
 }

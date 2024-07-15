@@ -83,22 +83,27 @@ bool Scene::is_visible(const Spirit *spirit) const
     }
 }
 
+void Scene::append_event(IOEvent *event)
+{
+    _io_events.push(event);
+}
+
 void Scene::append_event(Event *event)
 {
-    _events.push(event);
+    _internal_events.push(event);
 }
 
 void Scene::respond_events()
 {
-    if (_events.empty())
+    if (_io_events.empty() && _internal_events.empty())
     {
         return;
     }
     Event *event = nullptr;
-    while (!_events.empty())
+    while (!_internal_events.empty())
     {
-        event = _events.front();
-        _events.pop();
+        event = _internal_events.front();
+        _internal_events.pop();
         for (Spirits::SpiritGroup &group : _groups)
         {
             group.update(event);
@@ -108,6 +113,22 @@ void Scene::respond_events()
             }
         }
         delete event;
+    }
+
+    IOEvent *io_event = nullptr;
+    while (!_io_events.empty())
+    {
+        io_event = _io_events.front();
+        _io_events.pop();
+        for (Spirits::SpiritGroup &group : _groups)
+        {
+            group.update(io_event);
+            if (!io_event->active)
+            {
+                break;
+            }
+        }
+        delete io_event;
     }
 }
 

@@ -28,6 +28,8 @@ namespace ToyGameEngine
 
             bool is_visible(const Spirits::Spirit *spirit) const;
 
+            void append_event(IOEvent *event);
+
             void append_event(Event *event);
 
             void respond_events();
@@ -44,7 +46,8 @@ namespace ToyGameEngine
 
             Math::Geometry::AABBRect _viewport;
 
-            std::queue<Event *> _events;
+            std::queue<IOEvent *> _io_events;
+            std::queue<Event *> _internal_events;
 
             bool _is_running = false;
 

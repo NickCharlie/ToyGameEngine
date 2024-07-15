@@ -342,18 +342,6 @@ void SpiritGroup::update(Scenes::Event *event)
 
     switch (event->type())
     {
-    case Scenes::EventType::KEY_EVENT:
-        if (this->key_event_update)
-        {
-            update(static_cast<Scenes::KeyEvent *>(event));
-        }
-        break;
-    case Scenes::EventType::MOUSE_EVENT:
-        if (this->mouse_event_update)
-        {
-            update(static_cast<Scenes::MouseEvent *>(event));
-        }
-        break;
     case Scenes::EventType::DESTRUCTION_EVENT:
         update(static_cast<Scenes::DestructionEvent *>(event));
     default:
@@ -369,6 +357,23 @@ void SpiritGroup::update(Scenes::Event *event)
             }
         }
         break;
+    }
+}
+
+void SpiritGroup::update(Scenes::IOEvent *event)
+{
+    if (this->ignore_all_events)
+    {
+        return;
+    }
+
+    if (dynamic_cast<Scenes::KeyEvent *>(event) != nullptr)
+    {
+        update(static_cast<Scenes::KeyEvent *>(event));
+    }
+    else
+    {
+        update(static_cast<Scenes::MouseEvent *>(event));
     }
 }
 

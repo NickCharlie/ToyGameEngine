@@ -46,6 +46,8 @@ namespace ToyGameEngine
 
             virtual void update(Scenes::Event *event);
 
+            virtual void update(Scenes::IOEvent *event);
+
             virtual void update(Scenes::KeyEvent *event);
 
             virtual void update(Scenes::MouseEvent *event);
