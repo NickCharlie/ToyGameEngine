@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <QSize>
+#include <QTransform>
 
 using namespace ToyGameEngine::Canvas;
 using namespace ToyGameEngine::Math;
@@ -17,6 +18,11 @@ void ICanvas::paintEvent(QPaintEvent *event)
 void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double height, const QPixmap map)
 {
     QPixmap scaled_map = map.scaled(QSize(width, height),Qt::KeepAspectRatio,Qt::SmoothTransformation);
+
+    QTransform transform;  
+    transform.rotate(180);
+    scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
+    scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
 
     switch (sp->type())
     {
@@ -68,7 +74,7 @@ void ICanvas::draw_scene()
     painter.setWindow(0, this->height(), this->width(), -(this->height()));
 
     QPen pen;
-    pen.setColor(QColor(Qt::green)); //设置笔颜色
+    pen.setColor(QColor(Qt::blue)); //设置笔颜色
     pen.setWidth(2); //设置笔宽度
     painter.setPen(pen); //设置为要绘制的笔
 
