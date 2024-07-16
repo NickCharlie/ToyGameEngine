@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include "Math/Collision/GridMap.hpp"
 #include "Math/Collision/QuadTree.hpp"
 #include "Math/Collision/DirectMode.hpp"
@@ -126,43 +127,36 @@ namespace ToyGameEngine
 
                 void collision_translate(Geometry::GeometryObject *object, const double tx, const double ty)
                 {
-                    std::vector<Geometry::GeometryObject *> crushed_objects({object});
+                    std::deque<Geometry::GeometryObject *> crushed_objects({object});
                     std::vector<std::pair<Geometry::GeometryObject *, Geometry::GeometryObject *>> moved_object_pairs;
-                    size_t index = 0;
-                    Geo::Point vec;
+                    std::vector<Geometry::GeometryObject *> current_objects;
+                    Geometry::Vector vec;
                     while (!crushed_objects.empty())
                     {
                         object = crushed_objects.back();
                         crushed_objects.pop_back();
-                        index = crushed_objects.size();
-                        if (_detector.find_collision_objects(object, crushed_objects, false))
+                        if (_detector.find_collision_objects(object, current_objects))
                         {
-                            for (size_t i = index, count = crushed_objects.size(); i < count; ++i)
+                            for (Geometry::GeometryObject *current_object : current_objects)
                             {
                                 if (pair_in_pairs(moved_object_pairs, object, crushed_objects[i], true))
                                 {
-                                    crushed_objects.erase(crushed_objects.begin() + i--);
-                                    --count;
+                                    continue;
                                 }
-                                else
+
+                                moved_object_pairs.emplace_back(object, current_object);
+                                if (Collision::epa(object, current_object, tx, ty, vec) > 0)
                                 {
-                                    moved_object_pairs.emplace_back(object, crushed_objects[i]);
-                                    if (Collision::epa(object, crushed_objects[i], tx, ty, vec) > 0)
+                                    if (vec.x * tx + vec.y * ty > 0)
                                     {
-                                        if (vec.x * tx + vec.y * ty > 0)
-                                        {
-                                            crushed_objects[i]->translate(vec.x, vec.y);
-                                            _detector.update(crushed_objects[i]);
-                                        }
-                                        else
-                                        {
-                                            crushed_objects.erase(crushed_objects.begin() + i--);
-                                            --count;
-                                        }
-                                        vec.clear();
+                                        current_object->translate(vec.x, vec.y);
+                                        _detector.update(current_object);
+                                        current_objects.push_back(current_object);
                                     }
+                                    vec.clear();
                                 }
                             }
+                            current_objects.clear();
                         }
                     }
                 }

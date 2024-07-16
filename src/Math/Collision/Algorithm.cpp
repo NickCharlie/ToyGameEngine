@@ -151,7 +151,7 @@ bool Collision::is_point_inside(const Geometry::Point &point, const Geometry::Po
 
 bool Collision::gjk(const Geometry::Circle &circle0, const Geometry::Circle &circle1)
 {
-    return (circle0.x - circle1.x) * (circle0.x - circle1.x) + (circle0.y - circle1.y) + (circle0.y - circle1.y)
+    return (circle0.x - circle1.x) * (circle0.x - circle1.x) + (circle0.y - circle1.y) * (circle0.y - circle1.y)
         <= (circle0.radius + circle1.radius) * (circle0.radius + circle1.radius);
 }
 
@@ -551,8 +551,8 @@ double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &c
     const double length = Geometry::distance(circle0, circle1);
     if (length < circle0.radius + circle1.radius)
     {
-        vec = (circle1 - circle0).normalize() * (circle0.radius + circle1.radius - length) / 2;
-        return (circle0.radius + circle1.radius - length) / 2;
+        vec = (circle1 - circle0).normalize() * (circle0.radius + circle1.radius - length);
+        return circle0.radius + circle1.radius - length;
     }
     else if (length == circle0.radius + circle1.radius)
     {
@@ -1492,9 +1492,9 @@ double Collision::epa(const Geometry::Circle &circle0, const Geometry::Circle &c
     if (length < circle0.radius + circle1.radius)
     {
         Geometry::Vector vec = (circle1 - circle0).normalize();
-        head = circle0 + vec * (circle0.radius - circle1.radius + length) / 2;
-        tail = circle0 + vec * (3 * circle0.radius + circle1.radius - length) / 2;
-        return (circle0.radius + circle1.radius - length) / 2;
+        head = circle0 + vec * (circle0.radius - circle1.radius + length);
+        tail = circle0 + vec * (3 * circle0.radius + circle1.radius - length);
+        return circle0.radius + circle1.radius - length;
     }
     else if (length == circle0.radius + circle1.radius)
     {
