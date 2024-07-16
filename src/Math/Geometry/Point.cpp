@@ -54,7 +54,7 @@ bool Geometry::Point::operator!=(const Geometry::Point &point) const
 
 Geometry::Point &Geometry::Point::normalize()
 {
-    const double len = length();
+    const double len = std::sqrt(x * x + y * y);
     assert(len > 0);
     x /= len;
     y /= len;
@@ -63,7 +63,7 @@ Geometry::Point &Geometry::Point::normalize()
 
 Geometry::Point Geometry::Point::normalized() const
 {
-    const double len = length();
+    const double len = std::sqrt(x * x + y * y);
     assert(len > 0);
     return Geometry::Point(x / len, y / len);
 }
@@ -138,7 +138,7 @@ Geometry::Type Geometry::Point::type() const
 
 Geometry::AABBRect Geometry::Point::bounding_rect() const
 {
-    if (length() == 0)
+    if (std::sqrt(x * x + y * y) == 0)
     {
         return Geometry::AABBRect();
     }
@@ -150,7 +150,7 @@ Geometry::AABBRect Geometry::Point::bounding_rect() const
 
 Geometry::Polygon Geometry::Point::mini_bounding_rect() const
 {
-    if (length() == 0)
+    if (std::sqrt(x * x + y * y) == 0)
     {
         return Geometry::Polygon();
     }

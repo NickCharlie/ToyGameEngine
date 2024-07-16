@@ -291,7 +291,7 @@ namespace ToyGameEngine
                     }
                 }
 
-                return vec.length();
+                return vec.Geometry::Point::length();
             }
 
             double epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, Geometry::Vector &vec);
@@ -692,7 +692,7 @@ namespace ToyGameEngine
                     }
                 }
 
-                return vec.length();
+                return vec.Geometry::Point::length();
             }
         
             double epa(const Geometry::Circle &circle0, const Geometry::Circle &circle1, const double tx, const double ty, Geometry::Vector &vec);

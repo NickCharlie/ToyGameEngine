@@ -630,7 +630,7 @@ double Collision::epa(const Geometry::Circle &circle, const Geometry::Polygon &p
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Circle &circle, const Geometry::Rectangle &rectangle, Geometry::Vector &vec)
@@ -701,7 +701,7 @@ double Collision::epa(const Geometry::Circle &circle, const Geometry::Rectangle 
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Circle &circle, const Geometry::AABBRect &rectangle, Geometry::Vector &vec)
@@ -772,7 +772,7 @@ double Collision::epa(const Geometry::Circle &circle, const Geometry::AABBRect &
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Circle &circle, const Geometry::Square &square, Geometry::Vector &vec)
@@ -843,7 +843,7 @@ double Collision::epa(const Geometry::Circle &circle, const Geometry::Square &sq
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Circle &circle, const Geometry::Triangle &triangle, Geometry::Vector &vec)
@@ -914,7 +914,7 @@ double Collision::epa(const Geometry::Circle &circle, const Geometry::Triangle &
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Polygon &polygon, const Geometry::Circle &circle, Geometry::Vector &vec)
@@ -983,7 +983,7 @@ double Collision::epa(const Geometry::Polygon &polygon, const Geometry::Circle &
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Rectangle &rectangle, const Geometry::Circle &circle, Geometry::Vector &vec)
@@ -1054,7 +1054,7 @@ double Collision::epa(const Geometry::Rectangle &rectangle, const Geometry::Circ
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::AABBRect &rectangle, const Geometry::Circle &circle, Geometry::Vector &vec)
@@ -1125,7 +1125,7 @@ double Collision::epa(const Geometry::AABBRect &rectangle, const Geometry::Circl
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Square &square, const Geometry::Circle &circle, Geometry::Vector &vec)
@@ -1196,7 +1196,7 @@ double Collision::epa(const Geometry::Square &square, const Geometry::Circle &ci
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::Triangle &triangle, const Geometry::Circle &circle, Geometry::Vector &vec)
@@ -1267,7 +1267,7 @@ double Collision::epa(const Geometry::Triangle &triangle, const Geometry::Circle
             }
         }
     }
-    return vec.length();
+    return vec.Geometry::Point::length();
 }
 
 double Collision::epa(const Geometry::GeometryObject *points0, const Geometry::GeometryObject *points1, Geometry::Vector &vec)
