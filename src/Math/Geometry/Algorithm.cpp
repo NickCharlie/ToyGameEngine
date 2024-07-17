@@ -180,8 +180,8 @@ double Geometry::distance(const Geometry::Point &point, const Geometry::Point &s
 
 double Geometry::distance(const Geometry::Point &point, const Geometry::Polyline &polyline)
 {
-    double dis = DBL_MAX;
-    for (size_t i = 1, count = polyline.size(); i < count; ++i)
+    double dis = Geometry::distance(point, polyline.front(), polyline[1]);
+    for (size_t i = 2, count = polyline.size(); i < count; ++i)
     {
         dis = std::min(dis, Geometry::distance(point, polyline[i - 1], polyline[i]));
     }
@@ -190,8 +190,8 @@ double Geometry::distance(const Geometry::Point &point, const Geometry::Polyline
 
 double Geometry::distance(const Geometry::Point &point, const Geometry::Polygon &polygon)
 {
-    double dis = DBL_MAX;
-    for (size_t i = 1, count = polygon.size(); i < count; ++i)
+    double dis = Geometry::distance(point, polygon.front(), polygon[1]);
+    for (size_t i = 2, count = polygon.size(); i < count; ++i)
     {
         dis = std::min(dis, Geometry::distance(point, polygon[i - 1], polygon[i]));
     }
@@ -522,6 +522,35 @@ double Geometry::distance_square(const Geometry::Point &point, const Geometry::P
             return std::min(Geometry::distance_square(point, start), Geometry::distance_square(point, end));
         }
     }
+}
+
+double Geometry::distance_square(const Geometry::Point &point, const Geometry::Polyline &polyline)
+{
+    double dis = Geometry::distance_square(point, polyline.front(), polyline[1]);
+    for (size_t i = 2, count = polyline.size(); i < count; ++i)
+    {
+        dis = std::min(dis, Geometry::distance_square(point, polyline[i - 1], polyline[i]));
+    }
+    return dis;
+}
+
+double Geometry::distance_square(const Geometry::Point &point, const Geometry::Polygon &polygon)
+{
+    double dis = Geometry::distance_square(point, polygon.front(), polygon[1]);
+    for (size_t i = 2, count = polygon.size(); i < count; ++i)
+    {
+        dis = std::min(dis, Geometry::distance_square(point, polygon[i - 1], polygon[i]));
+    }
+    return dis;
+}
+
+double Geometry::distance_square(const Geometry::Point &point, const Geometry::Rectangle &rect)
+{
+    double dis = Geometry::distance_square(point, rect[0], rect[3]);
+    dis = std::min(dis, Geometry::distance_square(point, rect[0], rect[1]));
+    dis = std::min(dis, Geometry::distance_square(point, rect[1], rect[2]));
+    dis = std::min(dis, Geometry::distance_square(point, rect[2], rect[3]));
+    return dis;
 }
 
 
@@ -1322,9 +1351,10 @@ bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry
 
 bool Geometry::is_intersected(const Geometry::Polyline &polyline, const Geometry::Circle &circle)
 {
+    const double length = circle.radius * circle.radius;
     for (size_t i = 0, count = polyline.size(); i < count; ++i)
     {
-        if (Geometry::distance(circle, polyline[i - 1], polyline[i]) < circle.radius)
+        if (Geometry::distance_square(circle, polyline[i - 1], polyline[i]) < length)
         {
             return true;
         }
@@ -1446,9 +1476,10 @@ bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::
 
 bool Geometry::is_intersected(const Geometry::Polygon &polygon, const Geometry::Circle &circle, const bool inside)
 {
+    const double length = circle.radius * circle.radius;
     for (size_t i = 1, count = polygon.size(); i < count; ++i)
     {
-        if (Geometry::distance(circle, polygon[i - 1], polygon[i]) < circle.radius)
+        if (Geometry::distance_square(circle, polygon[i - 1], polygon[i]) < length)
         {
             return true;
         }
@@ -1467,7 +1498,7 @@ bool Geometry::is_intersected(const Geometry::Circle &circle0, const Geometry::C
 {
     if (inside)
     {
-        return Geometry::distance(circle0, circle1) <= circle0.radius + circle1.radius;
+        return Geometry::distance_square(circle0, circle1) <= std::pow(circle0.radius + circle1.radius, 2);
     }
     else
     {
@@ -1544,7 +1575,7 @@ bool Geometry::is_intersected(const Geometry::Rectangle &rect, const Geometry::C
             }
         }
     }
-    if (Geometry::distance(circle, rect) <= circle.radius)
+    if (Geometry::distance_square(circle, rect) <= circle.radius * circle.radius)
     {
         return true;
     }
@@ -1647,7 +1678,7 @@ bool Geometry::is_intersected(const Geometry::Square &square, const Geometry::Ci
             }
         }
     }
-    if (Geometry::distance(circle, square) <= circle.radius)
+    if (Geometry::distance_square(circle, square) <= circle.radius * circle.radius)
     {
         return true;
     }
@@ -1784,9 +1815,10 @@ bool Geometry::is_intersected(const Geometry::AABBRect &rect, const Geometry::Ci
             return true;
         }
     }
+    const double length = circle.radius * circle.radius;
     for (size_t i = 1; i < 5; ++i)
     {
-        if (Geometry::distance(circle, rect[i-1], rect[i]) <= circle.radius)
+        if (Geometry::distance_square(circle, rect[i-1], rect[i]) <= length)
         {
             return true;
         }
@@ -1995,7 +2027,7 @@ bool Geometry::NoAABBTest::is_intersected(const Geometry::Rectangle &rect, const
             }
         }
     }
-    if (Geometry::distance(circle, rect) <= circle.radius)
+    if (Geometry::distance_square(circle, rect) <= circle.radius * circle.radius)
     {
         return true;
     }
@@ -2048,7 +2080,7 @@ bool Geometry::NoAABBTest::is_intersected(const Geometry::Square &square, const 
             }
         }
     }
-    if (Geometry::distance(circle, square) <= circle.radius)
+    if (Geometry::distance_square(circle, square) <= circle.radius *  circle.radius)
     {
         return true;
     }
@@ -2301,8 +2333,8 @@ bool Geometry::NoAABBTest::is_intersected(const Geometry::GeometryObject *object
             return Geometry::is_intersected(*static_cast<const Geometry::Circle *>(object0),
                 *static_cast<const Geometry::Triangle *>(object1));
         case Geometry::Type::LINE:
-            return Geometry::distance(*static_cast<const Geometry::Circle *>(object0),
-                *static_cast<const Geometry::Line *>(object1), infinite) <= static_cast<const Geometry::Circle *>(object0)->radius;
+            return Geometry::distance_square(*static_cast<const Geometry::Circle *>(object0),
+                *static_cast<const Geometry::Line *>(object1), infinite) <= std::pow(static_cast<const Geometry::Circle *>(object0)->radius, 2);
         case Geometry::Type::POINT:
             return Geometry::is_inside(*static_cast<const Geometry::Point *>(object1),
                 *static_cast<const Geometry::Circle *>(object0), true);
@@ -2370,8 +2402,8 @@ bool Geometry::NoAABBTest::is_intersected(const Geometry::GeometryObject *object
                 static_cast<const Geometry::Line *>(object0)->back(),
                 static_cast<const Geometry::Bezier *>(object1)->shape(), infinite);
         case Geometry::Type::CIRCLE:
-            return Geometry::distance(*static_cast<const Geometry::Circle *>(object1),
-                *static_cast<const Geometry::Line *>(object0), infinite) <= static_cast<const Geometry::Circle *>(object1)->radius;
+            return Geometry::distance_square(*static_cast<const Geometry::Circle *>(object1),
+                *static_cast<const Geometry::Line *>(object0), infinite) <= std::pow(static_cast<const Geometry::Circle *>(object1)->radius, 2);
         case Geometry::Type::TRIANGLE:
             return Geometry::is_intersected(*static_cast<const Geometry::Triangle *>(object0),
                 *static_cast<const Geometry::Triangle *>(object1), inside);
@@ -2477,8 +2509,8 @@ bool Geometry::is_Rectangle(const Geometry::Polygon &polygon)
         return false;
     }
 
-    if (Geometry::distance(points[0], points[1]) == Geometry::distance(points[2], points[3]) &&
-        Geometry::distance(points[1], points[2]) == Geometry::distance(points[0], points[3]))
+    if (Geometry::distance_square(points[0], points[1]) == Geometry::distance_square(points[2], points[3]) &&
+        Geometry::distance_square(points[1], points[2]) == Geometry::distance_square(points[0], points[3]))
     {
         const Geometry::Point vec0 = points[0] - points[1], vec1 = points[2] - points[1];
         return std::abs(vec0.x * vec1.x + vec0.y * vec1.y) == 0;
@@ -2857,7 +2889,7 @@ bool Geometry::polygon_union(const Geometry::Polygon &polygon0, const Geometry::
 
         points.assign(points0.begin() + i, j < count ? points0.begin() + j : points0.end());
         std::sort(points.begin(), points.end(), [&](const Geometry::MarkedPoint &p0, const Geometry::MarkedPoint &p1)
-            { return Geometry::distance(p0, points0[i - 1]) < Geometry::distance(p1, points0[i - 1]); });
+            { return Geometry::distance_square(p0, points0[i - 1]) < Geometry::distance_square(p1, points0[i - 1]); });
         for (size_t k = i, n = 0; k < j; ++k)
         {
             points0[k] = points[n++];
@@ -2905,7 +2937,7 @@ bool Geometry::polygon_union(const Geometry::Polygon &polygon0, const Geometry::
 
         points.assign(points1.begin() + i, j < count ? points1.begin() + j : points1.end());
         std::sort(points.begin(), points.end(), [&](const Geometry::MarkedPoint &p0, const Geometry::MarkedPoint &p1)
-            { return Geometry::distance(p0, points1[i - 1]) < Geometry::distance(p1, points1[i - 1]); });
+            { return Geometry::distance_square(p0, points1[i - 1]) < Geometry::distance_square(p1, points1[i - 1]); });
         for (size_t k = i, n = 0; k < j; ++k)
         {
             points1[k] = points[n++];
@@ -3662,7 +3694,7 @@ bool Geometry::polygon_intersection(const Geometry::Polygon &polygon0, const Geo
 
         points.assign(points0.begin() + i, j < count ? points0.begin() + j : points0.end());
         std::sort(points.begin(), points.end(), [&](const Geometry::MarkedPoint &p0, const Geometry::MarkedPoint &p1)
-            { return Geometry::distance(p0, points0[i - 1]) < Geometry::distance(p1, points0[i - 1]); });
+            { return Geometry::distance_square(p0, points0[i - 1]) < Geometry::distance_square(p1, points0[i - 1]); });
         for (size_t k = i, n = 0; k < j; ++k)
         {
             points0[k] = points[n++];
@@ -3691,7 +3723,7 @@ bool Geometry::polygon_intersection(const Geometry::Polygon &polygon0, const Geo
 
         points.assign(points1.begin() + i, j < count ? points1.begin() + j : points1.end());
         std::sort(points.begin(), points.end(), [&](const Geometry::MarkedPoint &p0, const Geometry::MarkedPoint &p1)
-            { return Geometry::distance(p0, points1[i - 1]) < Geometry::distance(p1, points1[i - 1]); });
+            { return Geometry::distance_square(p0, points1[i - 1]) < Geometry::distance_square(p1, points1[i - 1]); });
         for (size_t k = i, n = 0; k < j; ++k)
         {
             points1[k] = points[n++];
@@ -4417,7 +4449,7 @@ bool Geometry::polygon_difference(const Geometry::Polygon &polygon0, const Geome
 
         points.assign(points0.begin() + i, j < count ? points0.begin() + j : points0.end());
         std::sort(points.begin(), points.end(), [&](const Geometry::MarkedPoint &p0, const Geometry::MarkedPoint &p1)
-            { return Geometry::distance(p0, points0[i - 1]) < Geometry::distance(p1, points0[i - 1]); });
+            { return Geometry::distance_square(p0, points0[i - 1]) < Geometry::distance_square(p1, points0[i - 1]); });
         for (size_t k = i, n = 0; k < j; ++k)
         {
             points0[k] = points[n++];
@@ -4465,7 +4497,7 @@ bool Geometry::polygon_difference(const Geometry::Polygon &polygon0, const Geome
 
         points.assign(points1.begin() + i, j < count ? points1.begin() + j : points1.end());
         std::sort(points.begin(), points.end(), [&](const Geometry::MarkedPoint &p0, const Geometry::MarkedPoint &p1)
-            { return Geometry::distance(p0, points1[i - 1]) < Geometry::distance(p1, points1[i - 1]); });
+            { return Geometry::distance_square(p0, points1[i - 1]) < Geometry::distance_square(p1, points1[i - 1]); });
         for (size_t k = i, n = 0; k < j; ++k)
         {
             points1[k] = points[n++];
