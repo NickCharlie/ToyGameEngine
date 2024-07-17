@@ -2,6 +2,7 @@
 
 #include <string>
 #include <functional>
+#include <QPixmap>
 #include "Math/Geometry/Point.hpp"
 #include "Scene/Event.hpp"
 
@@ -16,6 +17,8 @@ namespace ToyGameEngine
             bool key_event_update = false;
             bool mouse_event_update = false;
             bool ignore_all_events = false;
+
+            size_t _pixmap_state = 0;
 
         public:
             Spirit(const Math::Geometry::Vector &position);
@@ -55,6 +58,16 @@ namespace ToyGameEngine
 
             void load_event_queue(std::function<void(Scenes::Event *)> func);
 
+            void set_pixmap(std::vector<QPixmap*> maps);
+
+            std::vector<QPixmap*>& get_pixmap();
+
+            void push_pixmap(QPixmap* map);
+
+            void push_pixmaps(std::vector<QPixmap*> maps);
+
+            void clear_pixmaps();
+
         protected:
             Math::Geometry::Vector _velocity;
             double _direction;
@@ -63,6 +76,8 @@ namespace ToyGameEngine
             bool _visible = true;
 
             std::function<void(Scenes::Event *)> _append_event;
+
+            std::vector<QPixmap*> _pixmaps;
         };
 
     }

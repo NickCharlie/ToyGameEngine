@@ -125,3 +125,49 @@ void Spirit::load_event_queue(std::function<void(Scenes::Event *)> func)
 {
     _append_event = func;
 }
+
+
+void Spirit::set_pixmap(std::vector<QPixmap*> maps) 
+{
+    for (size_t i = 0; i < _pixmaps.size(); ++i)
+    {
+        delete _pixmaps[i];
+    }
+    _pixmaps.clear();
+    _pixmaps.shrink_to_fit();
+
+    for (QPixmap* map : maps)
+    {
+        _pixmaps.push_back(map);
+    }
+
+}
+
+std::vector<QPixmap*>& Spirit::get_pixmap()
+{
+    return _pixmaps;
+}
+
+
+void Spirit::push_pixmap(QPixmap* map)
+{
+    _pixmaps.push_back(map);
+}
+
+void Spirit::push_pixmaps(std::vector<QPixmap*> maps)
+{
+    for (QPixmap* map : maps)
+    {
+        _pixmaps.push_back(map);
+    }
+}
+
+void Spirit::clear_pixmaps()
+{
+    for (size_t i = 0; i < _pixmaps.size(); ++i)
+    {
+        delete _pixmaps[i];
+    }
+    _pixmaps.clear();
+    _pixmaps.shrink_to_fit();
+}

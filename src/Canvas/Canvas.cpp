@@ -15,9 +15,16 @@ void ICanvas::paintEvent(QPaintEvent *event)
     draw_scene();
 }
 
-void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double height, const QPixmap map)
+void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double height, std::vector<QPixmap*> map)
 {
-    QPixmap scaled_map = map.scaled(QSize(width, height),Qt::KeepAspectRatio,Qt::SmoothTransformation);
+    if (sp->_pixmap_state >= sp->get_pixmap().size())
+    {
+        std::cout << "sp->_pixmap_state >= sp->get_pixmap().size() " << sp->get_pixmap().size() << " " << sp->_pixmap_state << std::endl;
+        return;
+    }
+    size_t state = sp->_pixmap_state;
+
+    QPixmap scaled_map = map[state]->scaled(QSize(width, height),Qt::KeepAspectRatio,Qt::SmoothTransformation);
 
     QTransform transform;  
     transform.rotate(180);
@@ -91,31 +98,31 @@ void ICanvas::draw_scene()
             {
             case Geometry::Type::RECTANGLE:
                 draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape());
-                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit),
+                draw_pixmap(painter, spirit,
                  static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().width(),
                  static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().height(),
-                 static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->get_pixmap());
+                 spirit->get_pixmap());
                 break;
             case Geometry::Type::SQUARE:
                 draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape());
-                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Square> *>(spirit),
+                draw_pixmap(painter, spirit,
                  static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape().width(),
                  static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape().height(),
-                 static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->get_pixmap());
+                 spirit->get_pixmap());
                 break;
             case Geometry::Type::AABBRECT:
                 draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape());
-                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit),
+                draw_pixmap(painter, spirit,
                  static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape().width(),
                  static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->shape().height(),
-                 static_cast<ShapedSpirit<Geometry::AABBRect> *>(spirit)->get_pixmap());
+                 spirit->get_pixmap());
                 break;
             case Geometry::Type::CIRCLE:
                 draw_circle(painter, static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->shape());
-                draw_pixmap(painter, static_cast<ShapedSpirit<Geometry::Circle> *>(spirit),
+                draw_pixmap(painter, spirit,
                  static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->shape().radius,
                  static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->shape().radius,
-                 static_cast<ShapedSpirit<Geometry::Circle> *>(spirit)->get_pixmap());
+                 spirit->get_pixmap());
                 break;
             case Geometry::Type::POLYGON:
                 draw_polygon(painter, static_cast<ShapedSpirit<Geometry::Polygon> *>(spirit)->shape());
