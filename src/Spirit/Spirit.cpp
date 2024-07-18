@@ -152,8 +152,9 @@ void Spirit::push_pixmaps(std::vector<std::string> maps_string, std::vector<std:
 
 void Spirit::add_pixmap(std::string map_string, QPixmap* map)
 {
+    QPixmap* map_copy = new QPixmap(*map);
     this->_pixmaps_strings.push_back(map_string);
-    Resource::ResManager::get_instance().add_pixmap_resource(map_string, map);
+    Resource::ResManager::get_instance().add_pixmap_resource(map_string, map_copy);
 }
 
 void Spirit::add_exist_pixmap(std::string map_string)
