@@ -179,3 +179,25 @@ void Spirit::add_exist_pixmaps(std::vector<std::string> map_strings)
         this->_pixmaps_strings.push_back(str);
     }
 }
+
+void Spirit::set_pixmap_state(std::string state)
+{
+    this->_pixmap_state = state;
+    for (size_t i = 0; i < this->_pixmaps_strings.size(); ++i)
+    {
+        if (_pixmaps_strings[i] == this->_pixmap_state)
+        {
+            _pixmaps_strings[0].swap(_pixmaps_strings[i]);
+        }
+    }
+}
+
+std::string Spirit::get_pixmap_state() const
+{
+    return this->_pixmap_state;
+}
+
+std::vector<std::string> Spirit::get_pixmaps_strings() const
+{
+    return this->_pixmaps_strings;
+}

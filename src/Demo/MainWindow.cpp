@@ -29,7 +29,7 @@ void MainWindow::init()
 
     sp1->add_pixmap("shuati", new QPixmap("D:/shuati.png"));
     sp1->add_pixmap("bushua", new QPixmap("D:/bushua.png"));
-    sp1->_pixmap_state = "shuati";
+    sp1->set_pixmap_state(std::string("shuati"));
 
     _scene.groups().back().append(sp1);
 
@@ -38,7 +38,7 @@ void MainWindow::init()
 
     sp2->add_exist_pixmap("shuati");
     sp2->add_exist_pixmap("bushua");
-    sp2->_pixmap_state = "shuati";
+    sp2->set_pixmap_state(std::string("shuati"));
 
     _scene.groups().back().append(sp2);
 
@@ -47,7 +47,7 @@ void MainWindow::init()
 
     sp3->add_exist_pixmap("shuati");
     sp3->add_exist_pixmap("bushua");
-    sp3->_pixmap_state = "bushua";
+    sp3->set_pixmap_state(std::string("bushua"));
 
     _scene.groups().back().append(sp3);
 

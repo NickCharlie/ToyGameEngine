@@ -18,11 +18,17 @@ void ICanvas::paintEvent(QPaintEvent *event)
 
 void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double height)
 {
-    QPixmap* map = Resource::ResManager::get_instance().get_pixmap_resource(sp->_pixmap_state);
+
+    if (sp->get_pixmaps_strings().size() <= 0) 
+    {
+        return;
+    }
+
+    QPixmap* map = Resource::ResManager::get_instance().get_pixmap_resource(sp->get_pixmaps_strings()[0]);
 
     if (map == nullptr)
     {
-        std::cout << "cant find sp->_pixmap_state " << sp->_pixmap_state << std::endl;
+        std::cout << "cant find sp->_pixmap_state " << sp->get_pixmaps_strings()[0] << std::endl;
         return;
     }
 

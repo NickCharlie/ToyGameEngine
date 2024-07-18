@@ -18,8 +18,6 @@ namespace ToyGameEngine
             bool mouse_event_update = false;
             bool ignore_all_events = false;
 
-            std::string _pixmap_state;
-
         public:
             Spirit(const Math::Geometry::Vector &position);
             Spirit(const Math::Geometry::Vector &position, const Math::Geometry::Vector &velocity);
@@ -69,6 +67,12 @@ namespace ToyGameEngine
             void add_exist_pixmap(std::string map_string);
 
             void add_exist_pixmaps(std::vector<std::string> map_strings);
+
+            void set_pixmap_state(std::string state);
+
+            std::string get_pixmap_state() const;
+
+            std::vector<std::string> get_pixmaps_strings() const;
         protected:
             Math::Geometry::Vector _velocity;
             double _direction;
@@ -77,6 +81,8 @@ namespace ToyGameEngine
             bool _visible = true;
 
             std::function<void(Scenes::Event *)> _append_event;
+            
+            std::string _pixmap_state;
 
             std::vector<std::string> _pixmaps_strings;
         };
