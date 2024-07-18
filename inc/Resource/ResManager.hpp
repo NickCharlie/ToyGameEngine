@@ -11,7 +11,7 @@ namespace ToyGameEngine
 {
     namespace Resource
     {
-        using Resource = std::variant<QPixmap*, QMediaPlayer*>;
+        using ResourceVariant = std::variant<QPixmap*, QMediaPlayer*>;
 
         class ResManager {
         public:
@@ -35,13 +35,13 @@ namespace ToyGameEngine
 
             bool add_pixmap_resource(const std::string& name, QPixmap* map)
             {
-                if (pixmap->isNull()) 
+                if (map->isNull()) 
                 {
-                    delete pixmap;
+                    delete map;
                     std::cerr << "Failed to add QPixmap " << name <<  std::endl;
                     return false;
                 }
-                _resources[name] = pixmap;
+                _resources[name] = map;
                 return true;
             }
 
@@ -55,7 +55,7 @@ namespace ToyGameEngine
 
             QPixmap* get_pixmap_resource(const std::string& name) const 
             {
-                Resource it = _resources.find(name);
+                auto it = _resources.find(name);
                 if (it != _resources.end()) {
                     if (QPixmap* pixmap = std::get_if<QPixmap*>(&it->second)) 
                     {
@@ -66,9 +66,9 @@ namespace ToyGameEngine
                 return nullptr;
             }
 
-            QMediaObject* get_media_resource(const std::string& name) const 
+            QMediaPlayer* get_media_resource(const std::string& name) const 
             {
-                Resource it = _resources.find(name);
+                auto it = _resources.find(name);
                 if (it != _resources.end()) {
                     if (QMediaPlayer* mediaPlayer = std::get_if<QMediaPlayer*>(&it->second)) {
                         return *mediaPlayer;
@@ -79,7 +79,7 @@ namespace ToyGameEngine
             }
 
             void release_all() {
-                for (Resource& pair : _resources) 
+                for (auto& pair : _resources) 
                 {
                     std::visit([](auto* res) { delete res; }, pair.second);
                 }
@@ -95,7 +95,7 @@ namespace ToyGameEngine
                 release_all();
             }
 
-            std::map<std::string, Resource> _resources;
+            std::map<std::string, ResourceVariant> _resources;
         };
     }
 }
