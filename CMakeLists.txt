@@ -39,7 +39,7 @@ qt_add_executable(ToyGameEngine
     ${RESOURCE_SOURCES}
 )
 
-target_link_libraries(ToyGameEngine PRIVATE Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL Qt6::Gui Qt6::Core Qt6:Multimedia)
+target_link_libraries(ToyGameEngine PRIVATE Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL Qt6::Gui Qt6::Core Qt6::Multimedia)
 target_compile_definitions(ToyGameEngine PUBLIC POINTERHOLDER_TRANSITION=0)
 
 qt_finalize_executable(ToyGameEngine)

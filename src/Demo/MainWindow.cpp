@@ -1,6 +1,7 @@
 #include "Demo/MainWindow.hpp"
 #include "./ui_MainWindow.h"
 #include "Demo/Player.hpp"
+#include "Resource/ResManager.hpp"
 
 #include <QPixmap>
 
@@ -26,11 +27,9 @@ void MainWindow::init()
     ToyGameEngine::Spirits::Spirit* sp1 = new ToyGameEngine::Spirits::SquareSpirit(
         ToyGameEngine::Math::Geometry::Point(30, 30), ToyGameEngine::Math::Geometry::Square(30, 30, 20));
 
-    QPixmap* map1 = new QPixmap("D:/shuati.png");
-    QPixmap* map2 = new QPixmap("D:/bushua.png");
-
-    sp1->add_pixmap("shuati", map1);
-    sp1->add_pixmap("bushua", map2);
+    sp1->add_pixmap("shuati", new QPixmap("D:/shuati.png"));
+    sp1->add_pixmap("bushua", new QPixmap("D:/bushua.png"));
+    sp1->_pixmap_state = "shuati";
 
     _scene.groups().back().append(sp1);
 
@@ -39,6 +38,7 @@ void MainWindow::init()
 
     sp2->add_exist_pixmap("shuati");
     sp2->add_exist_pixmap("bushua");
+    sp2->_pixmap_state = "shuati";
 
     _scene.groups().back().append(sp2);
 
@@ -47,8 +47,7 @@ void MainWindow::init()
 
     sp3->add_exist_pixmap("shuati");
     sp3->add_exist_pixmap("bushua");
-    
-    sp3->_pixmap_state = 1;
+    sp3->_pixmap_state = "bushua";
 
     _scene.groups().back().append(sp3);
 

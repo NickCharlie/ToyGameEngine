@@ -4,7 +4,7 @@
 #include <map>
 #include <variant>
 #include <QPixmap>
-#include <QMediaPlayer>
+#include <QtMultimedia/QMediaPlayer>
 #include <iostream>
 
 namespace ToyGameEngine
@@ -55,9 +55,9 @@ namespace ToyGameEngine
 
             QPixmap* get_pixmap_resource(const std::string& name) const 
             {
-                auto it = _resources.find(name);
+                std::map<std::string, ResourceVariant>::const_iterator it = _resources.find(name);
                 if (it != _resources.end()) {
-                    if (QPixmap* pixmap = std::get_if<QPixmap*>(&it->second)) 
+                    if (QPixmap* const* pixmap = std::get_if<QPixmap*>(&it->second)) 
                     {
                         return *pixmap;
                     }
@@ -68,9 +68,9 @@ namespace ToyGameEngine
 
             QMediaPlayer* get_media_resource(const std::string& name) const 
             {
-                auto it = _resources.find(name);
+                std::map<std::string, ResourceVariant>::const_iterator it = _resources.find(name);
                 if (it != _resources.end()) {
-                    if (QMediaPlayer* mediaPlayer = std::get_if<QMediaPlayer*>(&it->second)) {
+                    if (QMediaPlayer* const* mediaPlayer = std::get_if<QMediaPlayer*>(&it->second)) {
                         return *mediaPlayer;
                     }
                 }
