@@ -46,7 +46,7 @@ namespace ToyGameEngine
 
             void draw_triangle(QPainter &painter, const Math::Geometry::Triangle &triangle) override;
 
-            void draw_pixmap(QPainter &painter, Spirits::Spirit* sp, double width, double height, std::vector<QPixmap*> map);
+            void draw_pixmap(QPainter &painter, Spirits::Spirit* sp, double width, double height);
 
             void update() override;
 

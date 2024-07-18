@@ -1,4 +1,5 @@
 #include "Canvas/Canvas.hpp"
+#include "Resource/ResManager.hpp"
 
 #include <iostream>
 #include <QSize>
@@ -15,16 +16,17 @@ void ICanvas::paintEvent(QPaintEvent *event)
     draw_scene();
 }
 
-void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double height, std::vector<QPixmap*> map)
+void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double height)
 {
-    if (sp->_pixmap_state >= sp->get_pixmap().size())
+    QPixmap* map = Resource::ResManager.get_instance().get_pixmap_resource(sp->_pixmap_state);
+
+    if (map == nullptr)
     {
-        std::cout << "sp->_pixmap_state >= sp->get_pixmap().size() " << sp->get_pixmap().size() << " " << sp->_pixmap_state << std::endl;
+        std::cout << "cant find sp->_pixmap_state " << sp->_pixmap_state << std::endl;
         return;
     }
-    size_t state = sp->_pixmap_state;
 
-    QPixmap scaled_map = map[state]->scaled(QSize(width, height),Qt::KeepAspectRatio,Qt::SmoothTransformation);
+    QPixmap scaled_map = map->scaled(QSize(width, height),Qt::KeepAspectRatio,Qt::SmoothTransformation);
 
     QTransform transform;  
     transform.rotate(180);

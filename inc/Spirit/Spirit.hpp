@@ -18,7 +18,7 @@ namespace ToyGameEngine
             bool mouse_event_update = false;
             bool ignore_all_events = false;
 
-            size_t _pixmap_state = 0;
+            std::string _pixmap_state;
 
         public:
             Spirit(const Math::Geometry::Vector &position);
@@ -58,16 +58,17 @@ namespace ToyGameEngine
 
             void load_event_queue(std::function<void(Scenes::Event *)> func);
 
-            void set_pixmap(std::vector<QPixmap*> maps);
+            QPixmap* get_pixmap(const std::string& name);
 
-            std::vector<QPixmap*>& get_pixmap();
+            void push_pixmap(std::string map_string, std::string file_path);
 
-            void push_pixmap(QPixmap* map);
+            void push_pixmaps(std::vector<std::string> maps_string, std::vector<std::string> file_path);
 
-            void push_pixmaps(std::vector<QPixmap*> maps);
+            void add_pixmap(std::string map_string, QPixmap* map);
 
-            void clear_pixmaps();
+            void add_exist_pixmap(std::string map_string);
 
+            void add_exist_pixmaps(std::vector<std::string> map_strings);
         protected:
             Math::Geometry::Vector _velocity;
             double _direction;
@@ -77,7 +78,7 @@ namespace ToyGameEngine
 
             std::function<void(Scenes::Event *)> _append_event;
 
-            std::vector<QPixmap*> _pixmaps;
+            std::vector<std::string> _pixmaps_strings;
         };
 
     }

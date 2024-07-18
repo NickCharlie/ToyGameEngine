@@ -1,5 +1,8 @@
 #include "Spirit/Spirit.hpp"
 #include "Math/Geometry/Algorithm.hpp"
+#include "Resource/ResManager.hpp"
+
+#include <iostream>
 
 using namespace ToyGameEngine::Spirits;
 using namespace ToyGameEngine::Math;
@@ -126,48 +129,52 @@ void Spirit::load_event_queue(std::function<void(Scenes::Event *)> func)
     _append_event = func;
 }
 
-
-void Spirit::set_pixmap(std::vector<QPixmap*> maps) 
+QPixmap* Spirit::get_pixmap(const std::string& pixmap_name)
 {
-    for (size_t i = 0; i < _pixmaps.size(); ++i)
-    {
-        delete _pixmaps[i];
-    }
-    _pixmaps.clear();
-    _pixmaps.shrink_to_fit();
-
-    for (QPixmap* map : maps)
-    {
-        _pixmaps.push_back(map);
-    }
-
-}
-
-std::vector<QPixmap*>& Spirit::get_pixmap()
-{
-    return _pixmaps;
+    return Resource::ResManager::get_instance().get_pixmap_resource(pixmap_name);
 }
 
 
-void Spirit::push_pixmap(QPixmap* map)
+void Spirit::push_pixmap(std::string map_string, std::string file_path)
 {
-    _pixmaps.push_back(map);
+    this->_pixmaps_strings.push_back(map_string);
+    Resource::ResManager::get_instance().load_pixmap_resource(map_string, file_path);
 }
 
-void Spirit::push_pixmaps(std::vector<QPixmap*> maps)
+void Spirit::push_pixmaps(std::vector<std::string> maps_string, std::vector<std::string> file_path)
 {
-    for (QPixmap* map : maps)
+    for (size_t i = 0; (i < maps_string.size()) && (i < file_path.size()); ++i)
     {
-        _pixmaps.push_back(map);
+        this->_pixmaps_strings.push_back(maps_string[i]);
+        Resource::ResManager::get_instance().load_pixmap_resource(maps_string[i], file_path[i]);
     }
 }
 
-void Spirit::clear_pixmaps()
+void Spirit::add_pixmap(std::string map_string, QPixmap* map)
 {
-    for (size_t i = 0; i < _pixmaps.size(); ++i)
+    this->_pixmaps_strings.push_back(map_string);
+    Resource::ResManager::get_instance().add_pixmap_resource(map_string, map);
+}
+
+void Spirit::add_exist_pixmap(std::string map_string)
+{
+    if (Resource::ResManager::get_instance().get_pixmap_resource(map_string) == nullptr)
     {
-        delete _pixmaps[i];
+        std::cerr << "cant find your map_string" << std::endl;
+        return;
     }
-    _pixmaps.clear();
-    _pixmaps.shrink_to_fit();
+    this->_pixmaps_strings.push_back(map_string);
+}
+
+void Spirit::add_exist_pixmaps(std::vector<std::string> map_strings)
+{
+    for (std::string str : map_strings)
+    {
+        if (Resource::ResManager::get_instance().get_pixmap_resource(str) == nullptr)
+        {
+            std::cerr << "cant find your map_string : " << str << std::endl;
+            continue;
+        }
+        this->_pixmaps_strings.push_back(str);
+    }
 }

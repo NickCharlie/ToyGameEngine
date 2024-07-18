@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/output/)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets OpenGL Gui Core)
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets OpenGL Gui Core Multimedia)
 
 add_subdirectory(src)
 include_directories(inc)
@@ -36,9 +36,10 @@ qt_add_executable(ToyGameEngine
     ${MATH_SOURCES}
     ${SPIRIT_SOURCES}
     ${SCENE_SOURCES}
+    ${RESOURCE_SOURCES}
 )
 
-target_link_libraries(ToyGameEngine PRIVATE Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL Qt6::Gui Qt6::Core)
+target_link_libraries(ToyGameEngine PRIVATE Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL Qt6::Gui Qt6::Core Qt6:Multimedia)
 target_compile_definitions(ToyGameEngine PUBLIC POINTERHOLDER_TRANSITION=0)
 
 qt_finalize_executable(ToyGameEngine)
