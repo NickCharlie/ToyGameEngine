@@ -3,6 +3,7 @@
 #include <queue>
 #include <functional>
 #include "Spirit/SpiritGroup.hpp"
+#include "BackGround/BackGroundGroup.hpp"
 #include "Math/Geometry/AABBRect.hpp"
 #include "Scene/Event.hpp"
 
@@ -49,6 +50,7 @@ namespace ToyGameEngine
 
         private:
             std::vector<Spirits::SpiritGroup> _groups;
+            std::vector<BackGrounds::BackGroundGroup> _backgroung_groups;
 
             Math::Geometry::AABBRect _viewport;
 

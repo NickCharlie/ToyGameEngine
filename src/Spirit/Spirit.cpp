@@ -188,6 +188,7 @@ void Spirit::set_pixmap_state(std::string state)
         if (_pixmaps_strings[i] == this->_pixmap_state)
         {
             _pixmaps_strings[0].swap(_pixmaps_strings[i]);
+            return;
         }
     }
 }
