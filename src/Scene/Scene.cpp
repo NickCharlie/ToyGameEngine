@@ -7,6 +7,7 @@
 using namespace ToyGameEngine::Scenes;
 using namespace ToyGameEngine::Spirits;
 using namespace ToyGameEngine::Math;
+using namespace ToyGameEngine::BackGrounds;
 
 Scene::Scene()
 {
@@ -20,6 +21,16 @@ void Scene::load_canvas(std::function<void()> func)
 std::vector<SpiritGroup> &Scene::groups()
 {
     return _groups;
+}
+
+std::vector<BackGroundGroup>& Scene::background_groups()
+{
+    return _backgroung_groups;
+}
+
+const std::vector<BackGroundGroup>& Scene::background_groups() const
+{
+    return _backgroung_groups;
 }
 
 const std::vector<SpiritGroup> &Scene::groups() const

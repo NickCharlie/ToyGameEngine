@@ -6,6 +6,7 @@
 #include "GeometryGroup.hpp"
 #include "Scene/KeyCode.hpp"
 #include "Spirit/ShapedSpirit.hpp"
+#include "BackGround/BackGroundGroup.hpp"
 
 #include <QPixmap>
 #include <unordered_set>
@@ -47,6 +48,8 @@ namespace ToyGameEngine
             void draw_triangle(QPainter &painter, const Math::Geometry::Triangle &triangle) override;
 
             void draw_pixmap(QPainter &painter, Spirits::Spirit* sp, double width, double height);
+
+            void draw_background(QPainter &painter, BackGrounds::BackGroundGroup bg);
 
             void update() override;
 

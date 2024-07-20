@@ -23,7 +23,11 @@ namespace ToyGameEngine
 
             std::vector<Spirits::SpiritGroup> &groups();
 
+            std::vector<BackGrounds::BackGroundGroup> &background_groups();
+
             const std::vector<Spirits::SpiritGroup> &groups() const;
+
+            const std::vector<BackGrounds::BackGroundGroup> &background_groups() const;
 
             void append_spiritgroup();
 

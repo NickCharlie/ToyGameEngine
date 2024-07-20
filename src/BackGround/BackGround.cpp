@@ -80,7 +80,6 @@ void ToyGameEngine::BackGrounds::BackGround::set_pixmap_state(std::string state)
             return;
         }
     }
-    std::cerr << "cant find your state" << std::endl;
 }
 
 std::string ToyGameEngine::BackGrounds::BackGround::get_pixmap_state() const

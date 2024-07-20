@@ -78,6 +78,32 @@ void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double h
     }
 }
 
+void ICanvas::draw_background(QPainter &painter, BackGrounds::BackGroundGroup bg)
+{
+
+    if (bg.size() <= 0)
+    {
+        return;
+    }
+
+    QPixmap* map = (bg[0]->get_pixmap(bg[0]->get_pixmap_state()));
+
+    if (map == nullptr)
+    {
+        std::cout << "cant find bg->_pixmap_state " << bg[0]->get_pixmaps_strings()[0] << std::endl;
+        return;
+    }
+
+    QPixmap scaled_map = map->scaled(QWidget::size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QTransform transform;  
+    transform.rotate(180);
+    scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
+    scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
+
+    painter.drawPixmap(0, 0, QWidget::size().width(), QWidget::size().height(), scaled_map);
+}
+
 void ICanvas::draw_scene()
 {
     if (_scene == nullptr)
@@ -92,6 +118,9 @@ void ICanvas::draw_scene()
     pen.setColor(QColor(Qt::blue)); //设置笔颜色
     pen.setWidth(2); //设置笔宽度
     painter.setPen(pen); //设置为要绘制的笔
+    
+    // 绘制背景
+    draw_background(painter, _scene->background_groups()[0]);
 
     for (const Spirits::SpiritGroup &group : _scene->groups())
     {

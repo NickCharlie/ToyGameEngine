@@ -2,6 +2,7 @@
 #include "./ui_MainWindow.h"
 #include "Demo/Player.hpp"
 #include "Resource/ResManager.hpp"
+#include "BackGround/BackGroundGroup.hpp"
 
 #include <QPixmap>
 
@@ -23,6 +24,13 @@ void MainWindow::init()
     ui->canvas->load_scene(&_scene);
     _scene.append_spiritgroup();
     _scene.groups().back().key_event_update = true;
+
+    _scene.background_groups().push_back(ToyGameEngine::BackGrounds::BackGroundGroup());
+
+    ToyGameEngine::BackGrounds::BackGround* bg = new ToyGameEngine::BackGrounds::BackGround();
+    bg->push_pixmap("firstBg", "D:/bg.jpg");
+    bg->set_pixmap_state("firstBg");
+    _scene.background_groups()[0].append(bg);
 
     ToyGameEngine::Spirits::Spirit* sp1 = new ToyGameEngine::Spirits::SquareSpirit(
         ToyGameEngine::Math::Geometry::Point(30, 30), ToyGameEngine::Math::Geometry::Square(30, 30, 20));
