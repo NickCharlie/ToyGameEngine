@@ -1,8 +1,8 @@
 #include "BackGround/BackGround.hpp"
 #include "Resource/ResManager.hpp"
-#include "BackGround.hpp"
+#include "BackGround/BackGround.hpp"
 
-using namespace ToyGameEngine::BackGround;
+using namespace ToyGameEngine::BackGrounds;
 
 
 
@@ -16,9 +16,9 @@ ToyGameEngine::BackGrounds::BackGround::~BackGround()
 
 
 
-ToyGameEngine::BackGrounds::BackGround *BackGrounds::BackGround::clone() const
+ToyGameEngine::BackGrounds::BackGround *BackGround::BackGround::clone() const
 {
-    return new BackGround::BackGround(*this);
+    return new BackGround(*this);
 }
 
 QPixmap* ToyGameEngine::BackGrounds::BackGround::BackGround::get_pixmap(const std::string& name)
@@ -42,7 +42,7 @@ void ToyGameEngine::BackGrounds::BackGround::push_pixmaps(std::vector<std::strin
 void ToyGameEngine::BackGrounds::BackGround::add_pixmap(std::string map_string, QPixmap* map)
 {
     QPixmap* map_copy = new QPixmap(*map);
-    this->_pixmaps_strings.push_back(map_string);
+    this->_pixmap_strings.push_back(map_string);
     Resource::ResManager::get_instance().add_pixmap_resource(map_string, map_copy);
 }
 
