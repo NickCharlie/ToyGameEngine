@@ -1,12 +1,18 @@
 #pragma once
+
 #include <string>
 #include <vector>
 #include <QPixmap>
+#include <array>
+
+#include "Math/Geometry/Point.hpp"
 
 namespace ToyGameEngine
 {
     namespace BackGrounds
     {
+
+        using namespace ToyGameEngine::Math;
 
         class BackGround
         {
@@ -33,10 +39,16 @@ namespace ToyGameEngine
             std::string get_pixmap_state() const;
 
             std::vector<std::string> get_pixmaps_strings() const;
+
+            std::vector<Math::Geometry::Point> get_points() const;
+
+            size_t size() const;
         protected:
             std::string _pixmap_state;
 
             bool _visible = true;
+
+            std::vector<Math::Geometry::Point> _points;
             std::vector<std::string> _pixmap_strings;
 
 

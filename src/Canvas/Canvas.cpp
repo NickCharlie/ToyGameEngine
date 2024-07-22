@@ -1,6 +1,8 @@
 #include "Canvas/Canvas.hpp"
 #include "Resource/ResManager.hpp"
+#include "Math/Geometry/Point.hpp"
 
+#include <vector>
 #include <iostream>
 #include <QSize>
 #include <QTransform>
@@ -83,25 +85,72 @@ void ICanvas::draw_background(QPainter &painter, BackGrounds::BackGroundGroup bg
 
     if (bg.size() <= 0)
     {
+        std::cerr << "bg.size() <= 0" << std::endl;
         return;
     }
 
-    QPixmap* map = (bg[0]->get_pixmap(bg[0]->get_pixmap_state()));
-
-    if (map == nullptr)
+    std::vector<std::vector<Math::Geometry::Point>> points;
+    std::vector<std::vector<QPixmap*>> maps(bg.size());
+    
+    for (size_t i = 0; i < bg.size(); ++i)
     {
-        std::cout << "cant find bg->_pixmap_state " << bg[0]->get_pixmaps_strings()[0] << std::endl;
-        return;
+        for (size_t j = 0; j < bg[i]->get_pixmaps_strings().size(); ++j)
+        {
+            maps[i].push_back(bg[i]->get_pixmap(bg[i]->get_pixmaps_strings()[j]));
+        }
+        points.push_back(bg[i]->get_points());
     }
 
-    QPixmap scaled_map = map->scaled(QWidget::size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    for (size_t i = 0; i < maps.size(); ++i)
+    {
 
-    QTransform transform;  
-    transform.rotate(180);
-    scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
-    scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
+        const auto& pixmap_strings = bg[i]->get_pixmaps_strings();
+        if (pixmap_strings.empty()) 
+        {
+            std::cerr << "Error: pixmap_strings is empty for background " << i << std::endl;
+            continue;
+        }
+        
+        for (size_t j = 0; j < maps[i].size(); ++j)
+        {
 
-    painter.drawPixmap(0, 0, QWidget::size().width(), QWidget::size().height(), scaled_map);
+            if (maps[i][j] == nullptr)
+            {
+                std::cout << "cant find bg pixmap" << std::endl;
+                continue;
+            }
+
+            QPixmap scaled_map = *(maps[i][j]);
+
+            QTransform transform;  
+            transform.rotate(180);
+            scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
+            scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
+
+            painter.drawPixmap(points[i][j].x, points[i][j].y, scaled_map.width(), scaled_map.height(), scaled_map);
+        }
+    }
+
+    // QPixmap* map = (bg[0]->get_pixmap(bg[0]->get_pixmap_state()));
+    // for (QPixmap* map : maps)
+    // {
+    //     if (map == nullptr)
+    //     {
+    //         std::cout << "cant find bg->_pixmap_state " << std::endl;
+    //         return;
+    //     }
+
+    //     // QPixmap scaled_map = map->scaled(QWidget::size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    //     QPixmap scaled_map = *map;
+
+    //     QTransform transform;  
+    //     transform.rotate(180);
+    //     scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
+    //     scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
+
+    //     painter.drawPixmap(0, 0, scaled_map.width(), scaled_map.height(), scaled_map);
+    // }
 }
 
 void ICanvas::draw_scene()

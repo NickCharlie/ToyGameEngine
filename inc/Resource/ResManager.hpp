@@ -1,11 +1,16 @@
 #pragma once
 
+#include "Utils/PixmapUtils.hpp"
+#include "Utils/Utils.hpp"
+
 #include <string>
 #include <map>
 #include <variant>
 #include <QPixmap>
 #include <QtMultimedia/QMediaPlayer>
 #include <iostream>
+
+using namespace ToyGameEngine::Utils;
 
 namespace ToyGameEngine
 {
@@ -31,6 +36,66 @@ namespace ToyGameEngine
                 }
                 _resources[name] = pixmap;
                 return true;
+            }
+
+            
+            std::vector<std::string> load_background_resource(const std::string& name, const std::string& filePath) 
+            {   
+                std::vector<std::string> ret;
+                QPixmap* pixmap = new QPixmap(QString::fromStdString(filePath));
+
+                QPixmap pm = pixmap->scaled(Utils::Util::get_mainwindow_size().width(), Utils::Util::get_mainwindow_size().height(),
+                 Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+                if (pixmap->isNull()) 
+                {
+                    delete pixmap;
+                    std::cerr << "Failed to load QPixmap from: " << filePath << std::endl;
+                    return std::vector<std::string>();
+                }
+
+                std::vector<QPixmap> split_maps = Utils::PixmapUtils::split_pixmap(pm, 50, 50);
+
+                if (split_maps.size() <= 0)
+                {
+                    std::cerr << "Failed to split QPixmap" << std::endl;
+                    return std::vector<std::string>();
+                }
+
+                for (size_t i = 0; i < split_maps.size(); ++i)
+                {
+                    std::string ret_name = name + "_" + std::to_string(i);
+                    ret.push_back(ret_name);
+                    _resources[ret_name] = new QPixmap(split_maps[i]);
+                }
+                return ret;
+            }
+
+            std::vector<std::string> add_background_resource(const std::string& name, QPixmap* map) 
+            {
+                std::vector<std::string> ret;
+                if (map->isNull()) 
+                {
+                    delete map;
+                    std::cerr << "Failed to load QPixmap" << std::endl;
+                    return std::vector<std::string>();
+                }
+
+                std::vector<QPixmap> split_maps = Utils::PixmapUtils::split_pixmap(*map, 50, 50);
+
+                if (split_maps.size() <= 0)
+                {
+                    std::cerr << "Failed to split QPixmap" << std::endl;
+                    return std::vector<std::string>();
+                }
+
+                for (size_t i = 0; i < split_maps.size(); ++i)
+                {
+                    std::string ret_name = name + "_" + std::to_string(i);
+                    ret.push_back(ret_name);
+                    _resources[ret_name] = new QPixmap(split_maps[i]);
+                }
+                return ret;
             }
 
             bool add_pixmap_resource(const std::string& name, QPixmap* map)
