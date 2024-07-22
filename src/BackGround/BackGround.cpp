@@ -33,22 +33,43 @@ void ToyGameEngine::BackGrounds::BackGround::push_pixmap(std::string map_string,
 {
     std::vector<std::string> ret_strings = Resource::ResManager::get_instance().load_background_resource(map_string, file_path);
 
-    for (size_t i = 0; i < ret_strings.size(); ++i)
+    // 清空之前的点和图像字符串
+    _points.clear();
+    _pixmap_strings.clear();
+
+    int cols = Utils::Util::get_mainwindow_size().width() / 50;
+    int image_index = 0;
+    
+    for (const std::string& str : ret_strings)
     {
-        for (size_t x = 0; x < Utils::Util::get_mainwindow_size().width(); x +=50)
-        {
-            for (size_t y = 0; y < Utils::Util::get_mainwindow_size().height(); y +=50)
-            {
-                Math::Geometry::Point p(x, y);
-                this->_points.push_back(p);
-            }
-        }
+        int x = (image_index % cols) * 50;
+        int y = (image_index / cols) * 50;
+        
+        _points.push_back({(double) x, (double) y});
+        _pixmap_strings.push_back(str);
+        ++image_index;
     }
 
-    for (std::string str : ret_strings)
+    // 检查Point点和图像字符串的数量是否一致
+    if (_points.size() != _pixmap_strings.size())
     {
-        this->_pixmap_strings.push_back(str);
+        std::cerr << "Error: _points size (" << _points.size() << ") does not match _pixmap_strings size (" << _pixmap_strings.size() << ")" << std::endl;
     }
+
+    // QSize mainWindowSize = Util::get_mainwindow_size();
+    // int width = mainWindowSize.width();
+    // int height = mainWindowSize.height();
+
+    // for (int x = 0; x < width; x += 50) 
+    // {
+    //     for (int y = 0; y < height; y += 50) 
+    //     {
+    //         Math::Geometry::Point p(x, y);
+    //         _points.push_back(p);
+    //     }
+    // }
+
+    // _pixmap_strings.insert(_pixmap_strings.end(), ret_strings.begin(), ret_strings.end());
 }
 
 void ToyGameEngine::BackGrounds::BackGround::push_pixmaps(std::vector<std::string> maps_string, std::vector<std::string> file_path)

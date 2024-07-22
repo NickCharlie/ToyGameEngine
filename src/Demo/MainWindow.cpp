@@ -29,7 +29,7 @@ void MainWindow::init()
 
     ToyGameEngine::BackGrounds::BackGround* bg = new ToyGameEngine::BackGrounds::BackGround();
     bg->push_pixmap("firstBg", "D:/bg.jpg");
-    bg->set_pixmap_state("firstBg");
+    // bg->set_pixmap_state("firstBg");
     _scene.background_groups()[0].append(bg);
 
     ToyGameEngine::Spirits::Spirit* sp1 = new ToyGameEngine::Spirits::SquareSpirit(

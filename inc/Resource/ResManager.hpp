@@ -44,26 +44,27 @@ namespace ToyGameEngine
                 std::vector<std::string> ret;
                 QPixmap* pixmap = new QPixmap(QString::fromStdString(filePath));
 
-                QPixmap pm = pixmap->scaled(Utils::Util::get_mainwindow_size().width(), Utils::Util::get_mainwindow_size().height(),
-                 Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                QSize mainWindowSize = Util::get_mainwindow_size();
+                QPixmap pm = pixmap->scaled(mainWindowSize.width(), mainWindowSize.height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-                if (pixmap->isNull()) 
-                {
+                QTransform transform;
+                transform.rotate(180);
+                pm = pm.transformed(QTransform().scale(-1, 1));
+                pm = pm.transformed(transform, Qt::SmoothTransformation);
+
+                if (pm.isNull()) {
                     delete pixmap;
                     std::cerr << "Failed to load QPixmap from: " << filePath << std::endl;
                     return std::vector<std::string>();
                 }
 
-                std::vector<QPixmap> split_maps = Utils::PixmapUtils::split_pixmap(pm, 50, 50);
-
-                if (split_maps.size() <= 0)
-                {
+                std::vector<QPixmap> split_maps = PixmapUtils::split_pixmap(pm, 50, 50);
+                if (split_maps.empty()) {
                     std::cerr << "Failed to split QPixmap" << std::endl;
                     return std::vector<std::string>();
                 }
 
-                for (size_t i = 0; i < split_maps.size(); ++i)
-                {
+                for (size_t i = 0; i < split_maps.size(); ++i) {
                     std::string ret_name = name + "_" + std::to_string(i);
                     ret.push_back(ret_name);
                     _resources[ret_name] = new QPixmap(split_maps[i]);
@@ -83,7 +84,7 @@ namespace ToyGameEngine
 
                 std::vector<QPixmap> split_maps = Utils::PixmapUtils::split_pixmap(*map, 50, 50);
 
-                if (split_maps.size() <= 0)
+                if (split_maps.empty())
                 {
                     std::cerr << "Failed to split QPixmap" << std::endl;
                     return std::vector<std::string>();

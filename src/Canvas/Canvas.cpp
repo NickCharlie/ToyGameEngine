@@ -83,53 +83,121 @@ void ICanvas::draw_pixmap(QPainter& painter, Spirit* sp,  double width, double h
 void ICanvas::draw_background(QPainter &painter, BackGrounds::BackGroundGroup bg)
 {
 
-    if (bg.size() <= 0)
-    {
-        std::cerr << "bg.size() <= 0" << std::endl;
-        return;
-    }
+    // if (bg.size() <= 0)
+    // {
+    //     std::cerr << "bg.size() <= 0" << std::endl;
+    //     return;
+    // }
 
-    std::vector<std::vector<Math::Geometry::Point>> points;
-    std::vector<std::vector<QPixmap*>> maps(bg.size());
+    // std::vector<std::vector<Math::Geometry::Point>> points;
+    // std::vector<std::vector<QPixmap*>> maps(bg.size());
     
-    for (size_t i = 0; i < bg.size(); ++i)
-    {
-        for (size_t j = 0; j < bg[i]->get_pixmaps_strings().size(); ++j)
-        {
-            maps[i].push_back(bg[i]->get_pixmap(bg[i]->get_pixmaps_strings()[j]));
-        }
-        points.push_back(bg[i]->get_points());
-    }
+    // for (size_t i = 0; i < bg.size(); ++i)
+    // {
+    //     for (size_t j = 0; j < bg[i]->get_pixmaps_strings().size(); ++j)
+    //     {
+    //         maps[i].push_back(bg[i]->get_pixmap(bg[i]->get_pixmaps_strings()[j]));
+    //     }
+    //     points.push_back(bg[i]->get_points());
+    // }
 
-    for (size_t i = 0; i < maps.size(); ++i)
-    {
+    // for (size_t i = 0; i < maps.size(); ++i)
+    // {
 
-        const auto& pixmap_strings = bg[i]->get_pixmaps_strings();
-        if (pixmap_strings.empty()) 
-        {
-            std::cerr << "Error: pixmap_strings is empty for background " << i << std::endl;
-            continue;
-        }
+    //     const auto& pixmap_strings = bg[i]->get_pixmaps_strings();
+    //     if (pixmap_strings.empty()) 
+    //     {
+    //         std::cerr << "Error: pixmap_strings is empty for background " << i << std::endl;
+    //         continue;
+    //     }
         
-        for (size_t j = 0; j < maps[i].size(); ++j)
-        {
+    //     for (size_t j = 0; j < maps[i].size(); ++j)
+    //     {
 
-            if (maps[i][j] == nullptr)
+    //         if (maps[i][j] == nullptr)
+    //         {
+    //             std::cout << "cant find bg pixmap" << std::endl;
+    //             continue;
+    //         }
+
+    //         QPixmap scaled_map = *(maps[i][j]);
+
+    //         QTransform transform;  
+    //         transform.rotate(180);
+    //         scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
+    //         scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
+
+    //         painter.drawPixmap(points[i][j].x, points[i][j].y, scaled_map.width(), scaled_map.height(), scaled_map);
+    //     }
+
+        if (bg.size() <= 0)
+        {
+            std::cerr << "bg.size() <= 0" << std::endl;
+            return;
+        }
+
+        std::vector<std::vector<QPixmap*>> maps(bg.size());
+    
+
+        for (size_t i = 0; i < bg.size(); ++i)
+        {   
+            const auto& pixmapStrings = bg[i]->get_pixmaps_strings();
+
+            // pixmapStrings.size() == 168
+            for (size_t j = 0; j < pixmapStrings.size(); ++j)
             {
-                std::cout << "cant find bg pixmap" << std::endl;
+                maps[i].push_back(bg[i]->get_pixmap(pixmapStrings[j]));
+            }
+        }
+
+        // for (size_t m = 0; m < maps[0].size(); ++m)
+        // {
+        //     QPixmap* tmp = maps[0][m];
+        //     maps[0][m] = new QPixmap(*maps[0][maps[0].size() - 1]);
+        //     maps[0][maps[0].size() - 1] = new QPixmap(*tmp);
+        // }
+
+        for (size_t i = 0; i < maps.size(); ++i)
+        {
+            const auto& points = bg[i]->get_points();
+            
+            if (maps[i].size() != points.size())
+            {
+                std::cerr << "Mismatch between maps size (" << maps[i].size() << ") and points size (" << points.size() << ") for background " << i << std::endl;
                 continue;
             }
 
-            QPixmap scaled_map = *(maps[i][j]);
+            for (size_t j = 0; j < maps[i].size(); ++j)
+            {
 
-            QTransform transform;  
-            transform.rotate(180);
-            scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
-            scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
+                if (j >= points.size())
+                {
+                    std::cerr << "Index j (" << j << ") out of range in points vector for background " << i << std::endl;
+                    continue;
+                }
 
-            painter.drawPixmap(points[i][j].x, points[i][j].y, scaled_map.width(), scaled_map.height(), scaled_map);
+                if (maps[i][j] == nullptr)
+                {
+                    std::cerr << "can't find bg pixmap: " << bg[i]->get_pixmaps_strings()[j] << std::endl;
+                    continue;
+                }
+
+                const Math::Geometry::Point& point = points[j];
+
+                QPixmap* map = maps[i][j];
+
+                QPixmap scaled_map = *map;
+
+                // QTransform transform;  
+                // transform.rotate(180);
+                // scaled_map = scaled_map.transformed(QTransform().scale(-1, 1));
+                // scaled_map = scaled_map.transformed(transform, Qt::SmoothTransformation);
+
+                // painter.drawPixmap(0, 0, scaled_map.width(), scaled_map.height(), scaled_map);
+
+                painter.drawPixmap(point.x, point.y, 50, 50, scaled_map);
+            }
         }
-    }
 
     // QPixmap* map = (bg[0]->get_pixmap(bg[0]->get_pixmap_state()));
     // for (QPixmap* map : maps)

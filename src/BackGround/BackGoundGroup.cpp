@@ -1,6 +1,6 @@
 #include "BackGround/BackGroundGroup.hpp"
 #include <cassert>
-
+#include <iostream>
 
 using namespace ToyGameEngine::BackGrounds;
 
@@ -165,7 +165,7 @@ std::vector<BackGround *>::const_reverse_iterator BackGroundGroup::crend() const
 }
 
 BackGround *BackGroundGroup::operator[](int index)
-{
+{   
     assert(index < _objects.size());
     return _objects[index];
 }
