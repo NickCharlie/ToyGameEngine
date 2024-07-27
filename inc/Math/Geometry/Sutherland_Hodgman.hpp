@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include "Math/Geometry/Polygon.hpp"
 
 namespace ToyGameEngine
@@ -11,17 +10,18 @@ namespace ToyGameEngine
         namespace Geometry
         {
 
-            class Sutherland_Hodgman
+            namespace Sutherland_Hodgman
             {
-            public:
-                static Polygon clip(const Polygon &polygon, const Polygon &clipper);
-            private:
+                Polygon clip(const Polygon &polygon, const Polygon &clipper);
 
-                static bool inside(const Point& p, const Point& edgeStart, const Point& edgeEnd);
-                static Point intersection(const Point& start, const Point& end, const Point& edgeStart, const Point& edgeEnd);
-                static double polygonArea(const std::vector<Point>& polygon);
-                static void ensureClockwise(std::vector<Point>& polygon);
-            };
+                namespace
+                {
+                    bool inside(const Point& p, const Point& edgeStart, const Point& edgeEnd)
+                    {
+                        return (edgeEnd.x - edgeStart.x) * (p.y - edgeStart.y) > (edgeEnd.y - edgeStart.y) * (p.x - edgeStart.x);
+                    }
+                }
+            }
         }
     }
 
