@@ -20,6 +20,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/output/)
 
+#Boost
+set(Boost_DEBUG ON)
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_NO_WARN_NEW_VERSIONS 1)
+find_package(Boost REQUIRED COMPONENTS thread)
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets OpenGL Gui Core Multimedia)
 
 add_subdirectory(src)
@@ -41,7 +47,7 @@ qt_add_executable(ToyGameEngine
     ${UTILS_SOURCES}
 )
 
-target_link_libraries(ToyGameEngine PRIVATE Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL Qt6::Gui Qt6::Core Qt6::Multimedia)
+target_link_libraries(ToyGameEngine PRIVATE Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL Qt6::Gui Qt6::Core Qt6::Multimedia Boost::thread)
 target_compile_definitions(ToyGameEngine PUBLIC POINTERHOLDER_TRANSITION=0)
 
 qt_finalize_executable(ToyGameEngine)

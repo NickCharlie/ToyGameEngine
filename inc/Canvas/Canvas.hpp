@@ -7,6 +7,7 @@
 #include "Scene/KeyCode.hpp"
 #include "Spirit/ShapedSpirit.hpp"
 #include "BackGround/BackGroundGroup.hpp"
+#include "Utils/ThreadPool.hpp"
 
 #include <QPixmap>
 #include <unordered_set>
