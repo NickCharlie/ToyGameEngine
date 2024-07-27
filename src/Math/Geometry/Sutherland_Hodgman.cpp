@@ -1,5 +1,5 @@
 #include "Math/Geometry/Sutherland_Hodgman.hpp"
-#include "Math/Geometry/Polygon.hpp"
+
 
 using namespace ToyGameEngine::Math::Geometry;
 
@@ -17,7 +17,7 @@ Polygon Sutherland_Hodgman::clip(const Polygon &polygon, const Polygon &clipper)
     {
         clipper_points.push_back(clipper[i]);
     }
-    
+    ensureClockwise(clipper_points); 
     for (size_t i = 0; i < clipper_points.size(); ++i) 
     {
         std::vector<Point> input = output;
@@ -72,4 +72,22 @@ Point Sutherland_Hodgman::intersection(const Point &start, const Point &end, con
     intersect.y = (a1 * c2 - a2 * c1) / determinant;
 
     return intersect;
+}
+
+// �������ε��������ֵ��ʾ˳ʱ�룬��ֵ��ʾ��ʱ��
+double Sutherland_Hodgman::polygonArea(const std::vector<Point>& polygon) {
+    float area = 0;
+    int n = polygon.size();
+    for (int i = 0; i < n; ++i) {
+        int j = (i + 1) % n;
+        area += (polygon[i].x * polygon[j].y) - (polygon[j].x * polygon[i].y);
+    }
+    return area / 2.0;
+}
+
+// ȷ������ζ��㰴˳ʱ�뷽������
+void Sutherland_Hodgman::ensureClockwise(std::vector<Point>& polygon) {
+    if (polygonArea(polygon) < 0) {
+        std::reverse(polygon.begin(), polygon.end());
+    }
 }
