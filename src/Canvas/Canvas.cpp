@@ -6,6 +6,7 @@
 #include <iostream>
 #include <QSize>
 #include <QTransform>
+#include <future>
 
 using namespace ToyGameEngine::Canvas;
 using namespace ToyGameEngine::Math;
@@ -235,9 +236,18 @@ void ICanvas::draw_scene()
     pen.setColor(QColor(Qt::blue)); //设置笔颜色
     pen.setWidth(2); //设置笔宽度
     painter.setPen(pen); //设置为要绘制的笔
-    
+
     // 绘制背景
-    draw_background(painter, _scene->background_groups()[0]);
+    std::future<void> background_painter = _canvas_thread_pool->enqueue(
+        [this, &painter]() 
+        {
+             draw_background(painter, _scene->background_groups()[0]); 
+        }
+    );
+    background_painter.get();
+    // draw_background(painter, _scene->background_groups()[0]);
+
+    // std::vector<std::future<void>> spirits_painter;
 
     for (const Spirits::SpiritGroup &group : _scene->groups())
     {
@@ -251,12 +261,35 @@ void ICanvas::draw_scene()
             switch (spirit->type())
             {
             case Geometry::Type::RECTANGLE:
+
+                // spirits_painter.push_back(
+                //     _canvas_thread_pool->enqueue(
+                //         [this, &painter, &spirit]() 
+                //         { 
+                //             draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape());
+                //             draw_pixmap(painter, spirit,
+                //                 static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().width(),
+                //                 static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().height());
+                //         }
+                // ));
+
                 draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape());
                 draw_pixmap(painter, spirit,
                  static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().width(),
                  static_cast<ShapedSpirit<Geometry::Rectangle> *>(spirit)->shape().height());
                 break;
             case Geometry::Type::SQUARE:
+
+                // spirits_painter.push_back(
+                //     _canvas_thread_pool->enqueue(
+                //         [this, &painter, &spirit]() 
+                //         { 
+                //             draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape());
+                //             draw_pixmap(painter, spirit,
+                //                 static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape().width(),
+                //                 static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape().height());
+                //         }
+                // ));
                 draw_rectangle(painter, static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape());
                 draw_pixmap(painter, spirit,
                  static_cast<ShapedSpirit<Geometry::Square> *>(spirit)->shape().width(),
@@ -307,6 +340,12 @@ void ICanvas::draw_scene()
             }
         }
     }
+
+    // 等待所有线程完成
+    // for (auto& future : spirits_painter)
+    // {
+    //     future.get();
+    // }
 }
 
 void ICanvas::draw_line(QPainter &painter, const Math::Geometry::Line &line)

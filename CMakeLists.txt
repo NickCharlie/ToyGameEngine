@@ -23,7 +23,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/output/)
 #Boost
 set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_LIBS ON)
-set(Boost_NO_WARN_NEW_VERSIONS 1)
+set(Boost_NO_WARN_NEW_VERSIONS ON)
 find_package(Boost REQUIRED COMPONENTS thread)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets OpenGL Gui Core Multimedia)

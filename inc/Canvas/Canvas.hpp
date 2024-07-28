@@ -23,9 +23,19 @@ namespace ToyGameEngine
         private:
             QPolygonF _qpoints;
             
+            Utils::ThreadPool* _canvas_thread_pool;
+
             std::unordered_set<Scenes::Key> key;
         public:
-            ICanvas(QWidget *parent = nullptr) : QWidget(parent) {}
+            ICanvas(QWidget *parent = nullptr) : QWidget(parent) 
+            {
+                _canvas_thread_pool = new Utils::ThreadPool(2);
+            }
+            
+            ~ICanvas() 
+            {
+                delete _canvas_thread_pool;
+            }
 
             // 绘图事件
             void paintEvent(QPaintEvent *event) override;
