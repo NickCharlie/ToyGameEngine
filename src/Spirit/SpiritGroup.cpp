@@ -5,6 +5,7 @@ using namespace ToyGameEngine::Spirits;
 
 SpiritGroup::SpiritGroup()
 {
+    
 }
 
 SpiritGroup::~SpiritGroup()

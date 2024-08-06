@@ -119,6 +119,18 @@ namespace ToyGameEngine
                 return true;
             }
 
+            bool add_media_resource(const std::string& name, QMediaPlayer* media)
+            {
+                if (media == nullptr) 
+                {
+                    delete media;
+                    std::cerr << "Failed to add Media " << name <<  std::endl;
+                    return false;
+                }
+                _resources[name] = media;
+                return true;
+            }
+
             QPixmap* get_pixmap_resource(const std::string& name) const 
             {
                 std::map<std::string, ResourceVariant>::const_iterator it = _resources.find(name);

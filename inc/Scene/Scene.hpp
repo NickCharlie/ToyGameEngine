@@ -6,7 +6,7 @@
 #include "BackGround/BackGroundGroup.hpp"
 #include "Math/Geometry/AABBRect.hpp"
 #include "Scene/Event.hpp"
-
+#include "Sounds/SoundsGroup.hpp"
 
 namespace ToyGameEngine 
 {
